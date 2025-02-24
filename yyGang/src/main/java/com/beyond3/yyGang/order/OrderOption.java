@@ -34,5 +34,27 @@ public class OrderOption {
 
     private int price;  // 가격
 
+    protected OrderOption() {
+    }
+
+    private OrderOption(NSupplement nSupplement, int quantity) {
+        this.nSupplement = nSupplement;
+        this.quantity = quantity;
+        this.price = calculateOrderOptionPrice();
+    }
+
+    // createOrderOption -> 명시적으로 OrderOption을 생성한다고 표현
+    public static OrderOption createOrderOption(NSupplement nSupplement, int quantity) {
+        return new OrderOption(nSupplement, quantity);
+    }
+
+    void setOrder(Order order) {
+        this.order = order;
+    }
+
+    private int calculateOrderOptionPrice() {
+        return this.getNSupplement().getPrice() * this.getQuantity();
+    }
+
 
 }
