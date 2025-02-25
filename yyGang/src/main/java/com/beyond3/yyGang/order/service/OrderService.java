@@ -6,6 +6,8 @@ import com.beyond3.yyGang.nsupplement.NSupplementRepository;
 import com.beyond3.yyGang.order.Order;
 import com.beyond3.yyGang.order.OrderOption;
 import com.beyond3.yyGang.order.repository.OrderRepository;
+import com.beyond3.yyGang.pay.PersonalAccount;
+import com.beyond3.yyGang.pay.repository.PersonalAccountRepository;
 import com.beyond3.yyGang.user.domain.User;
 import com.beyond3.yyGang.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -23,11 +25,20 @@ public class OrderService {
     private final UserRepository userRepository;
     private final NSupplementRepository nSupplementRepository;
     private final OrderRepository orderRepository;
+    private final PersonalAccountRepository personalAccountRepository;
 
+
+    // 재산 확인
     @Transactional
     public Long orderOne(Long userId, Long nSupplementId, int quantity) {
         User findUser = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found for userId"));
         NSupplement findNSupplement = nSupplementRepository.findById(nSupplementId).orElseThrow(() -> new EntityNotFoundException("NSupplement not found for nSupplementId"));
+        PersonalAccount findPersonalAccount = personalAccountRepository.findByUserId(userId).orElseThrow(() -> new EntityNotFoundException("PersonalAccount not found for userId"));
+
+        // 재산 충분한지 확인
+        if (findPersonalAccount.getBalance() < findNSupplement.getPrice() * quantity) {
+            throw new IllegalStateException("재산이 부족합니다.");
+        }
 
         // 재고 부족 시 예외처리
         if (findNSupplement.getStockQuantity() < quantity) {
