@@ -49,6 +49,11 @@ public class Cart {
         return new Cart(user);
     }
 
+    /*public CartDto toCartDto() {
+        CartDto.builder()
+                .quantity(ca)
+    }*/
+
 //    @OneToMany(mappedBy = "cart")
 //    private List<CartOption> cartOptions;
 }

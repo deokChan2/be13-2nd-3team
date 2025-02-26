@@ -49,7 +49,7 @@ public class CartOption {
     }
 
     // 영양제 수량 증가 및 총 가격 계산
-    public void increaseQuantity(int quantity) {
+    /*public void increaseQuantity(int quantity) {
         this.quantity += quantity;
         this.price = calculateCartOptionPrice();
         //this.price = this.nSupplement.getPrice() * this.quantity; // 둘 중 어느 것이 더 좋은 로직인지
@@ -62,10 +62,14 @@ public class CartOption {
             this.price = calculateCartOptionPrice();
         }
     }
-
+*/
     // 장바구니옵션 총 가격 계산
     private int calculateCartOptionPrice() {
-        return this.getNSupplement().getPrice() * this.getQuantity();
+        return this.nSupplement.getPrice() * this.quantity;
+    }
+
+    public void updateQuantity(int quantity) {
+        this.quantity = quantity;
     }
 
 }

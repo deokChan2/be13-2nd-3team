@@ -2,6 +2,7 @@ package com.beyond3.yyGang.cart.service;
 
 import com.beyond3.yyGang.cart.Cart;
 import com.beyond3.yyGang.cart.CartOption;
+import com.beyond3.yyGang.cart.dto.CartListDto;
 import com.beyond3.yyGang.cart.repository.CartOptionRepository;
 import com.beyond3.yyGang.cart.repository.CartRepository;
 import com.beyond3.yyGang.nsupplement.NSupplement;
@@ -41,15 +42,26 @@ public class CartService {
     // void와 Long중 어느 거 사용, user를 파라미터로 받아와야 하는지???
     // List
     @Transactional
-    public void deleteCartOption(Long cartOptionId/*, Long userId*/) {
-        // User findUser = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found for userId"));
+    public void deleteCartOption(Long cartOptionId) {
         CartOption findCartOption = cartOptionRepository.findById(cartOptionId).orElseThrow(() -> new EntityNotFoundException("CartOption not found for CartOptionId"));
-        //Cart findCart = cartRepository.findByUserId(userId).orElseThrow(() -> new EntityNotFoundException("Cart not found for userId"));
 
         cartOptionRepository.delete(findCartOption);
     }
 
     @Transactional
+    // 장바구니 상품 수량 업데이트
+    public void updateCartProductQuantity(Long cartOptionId, int count) {
+        CartOption cartOption = cartOptionRepository.findById(cartOptionId).orElseThrow(EntityNotFoundException::new);
+        cartOption.updateQuantity(count);
+    }
+
+    /*public List<CartListDto> getCartList(String userEmail) {
+        cartRepository.find
+
+    }*/
+
+
+    /*@Transactional
     public void increaseCartOptionQuantity(Long cartOptionId, int quantity) {
         CartOption findCartOption = cartOptionRepository.findById(cartOptionId).orElseThrow(() -> new EntityNotFoundException("CartOption not found for CartOptionId"));
         findCartOption.increaseQuantity(quantity);
@@ -59,7 +71,7 @@ public class CartService {
     public void decreaseCartOptionQuantity(Long cartOptionId, int quantity) {
         CartOption findCartOption = cartOptionRepository.findById(cartOptionId).orElseThrow(() -> new EntityNotFoundException("CartOption not found for CartOptionId"));
         findCartOption.decreaseQuantity(quantity);
-    }
+    }*/
 
 
 }
