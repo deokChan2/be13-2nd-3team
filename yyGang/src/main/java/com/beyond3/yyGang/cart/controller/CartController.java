@@ -1,26 +1,34 @@
 package com.beyond3.yyGang.cart.controller;
 
 import com.beyond3.yyGang.cart.Cart;
-import com.beyond3.yyGang.cart.dto.CartListDto;
+import com.beyond3.yyGang.cart.CartOption;
+import com.beyond3.yyGang.cart.dto.AddCartOptionRequestDto;
+import com.beyond3.yyGang.cart.dto.CartOptionDto;
+import com.beyond3.yyGang.cart.dto.CartResponseDto;
 import com.beyond3.yyGang.cart.repository.CartOptionRepository;
 import com.beyond3.yyGang.cart.repository.CartRepository;
 import com.beyond3.yyGang.cart.service.CartService;
+import com.beyond3.yyGang.nsupplement.NSupplementRepository;
 import com.beyond3.yyGang.security.JwtTokenProvider;
-import com.beyond3.yyGang.user.domain.User;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -31,29 +39,68 @@ public class CartController {
     private final CartService cartService;
     private final CartRepository cartRepository;
     private final CartOptionRepository cartOptionRepository;
+    private final NSupplementRepository nSupplementRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
-    // 이게 맞나??
     // 로그인한 사용자의 장바구니 조회
     @GetMapping
-    public ResponseEntity<List<CartListDto>> getUserCart(@RequestHeader("Authorization") String token) {
+    @Operation(summary = "장바구니 목록 조회", description = "사용자 장바구니의 영양제 목록을 조회한다.")
+    public ResponseEntity<CartResponseDto> getUserCart(@RequestHeader("Authorization") String token) {
         String userEmail = getUserEmailFromToken(token);
 
-        Cart findCart = cartRepository.findByUserEmail(userEmail).orElseThrow(() -> new EntityNotFoundException("cart not found"));
-        List<CartListDto> cartListDtoByCartId = cartOptionRepository.findCartListDtoByCartId(findCart.getCartId());
+        CartResponseDto cartResponseDto = cartService.getCart(userEmail);
 
-        return ResponseEntity.ok(cartListDtoByCartId);
+        return ResponseEntity.ok(cartResponseDto);
     }
 
     @PostMapping("/nsupplement")
-    public Res
+    @Operation(summary = "장바구니 영양제 추가", description = "사용자 장바구니에 영양제를 추가한다.")
+    public ResponseEntity<CartResponseDto> addCartOption(
+            @RequestHeader("Authorization") String token,
+            @Valid @RequestBody AddCartOptionRequestDto addCartOptionRequestDto
+    ) {
+        String userEmail = getUserEmailFromToken(token);
+
+        CartResponseDto cartResponseDto = cartService.addCartOption(userEmail, addCartOptionRequestDto);
+
+        return ResponseEntity.ok(cartResponseDto);
+    }
+
+    // 장바구니 삭제
+    @DeleteMapping("/{cartOptionId}")
+    @Operation(summary = "장바구니 영양제 삭제", description = "사용자 장바구니에 있는 영양제를 삭제한다.")
+    public ResponseEntity<Long> deleteCartOption(@PathVariable Long cartOptionId
+            /*,@RequestHeader("Authorization") String token*/) {
+
+        cartOptionRepository.findById(cartOptionId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 장바구니 품목을 찾을 수 없습니다."));
+
+        cartService.deleteCartOption(cartOptionId);
+        return ResponseEntity.ok(cartOptionId);
+    }
+
+    // 장바구니 상품 수량,가격 변경
+    @PutMapping("/{cartOptionId}")
+    @Operation(summary = "장바구니 영양제 수량 변경", description = "사용자 장바구니의 영양제 수량을 변경한다.")
+    public ResponseEntity<CartOptionDto> updateCartOptionQuantity(@PathVariable Long cartOptionId,
+                                                                  @RequestParam int quantity
+            /*,@RequestHeader("Authorization") String token*/) {
 
 
+//        if(quantity <= 0 ) {
+//            return new ResponseEntity<CartOptionDto>("최소 1개 이상 담아주세요", HttpStatus.BAD_REQUEST);
+//        }
+        // 수량, 가격 업데이트
+        cartService.updateCartProduct(cartOptionId, quantity);
 
+        CartOption updateCartOption = cartOptionRepository.findById(cartOptionId).orElseThrow(EntityNotFoundException::new);
+        CartOptionDto cartOptionDto = new CartOptionDto();
+        cartOptionDto.setNSupplementId(updateCartOption.getNSupplement().getProductId());
+        cartOptionDto.setQuantity(updateCartOption.getQuantity());
+        cartOptionDto.setPrice(updateCartOption.getPrice());  // 변경된 가격
 
-
-
-
+        return ResponseEntity.ok(cartOptionDto);
+    }
 
     private String getUserEmailFromToken(String token){
         String trimToken = token.substring(7).trim();

@@ -5,49 +5,50 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter extends GenericFilterBean {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // JWT Token을 필터링, 유효한 토큰인 경우 사용자 인증 정보를 SecurityContext에 저장
     // UsernamePasswordAuthenticationFilter 이전이 실행되는 내용
 
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        String token = resolveToken((HttpServletRequest) request);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        if(token!= null && jwtTokenProvider.validateToken(token)) {
-            // token이 유효하고, null이 아니라면
-            // Token에서 Authentication 객체를 가지고 와서 SecurityContext에 저장함
+        // 회원이 발급 받은 Token을 들고 Request 를 보낼 때
+        // 받은 Request 의 Authorization 헤더에서 Token만 Parsing 해서 추출
+        String token = jwtTokenProvider.resolveToken(request.getHeader("Authorization"));
+
+        if (request.getRequestURI().startsWith("/user/join")) {
+            // "/user/join" 경로는 필터를 거치지 않도록 설정
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if(token != null
+                && jwtTokenProvider.validateToken(token)
+                && jwtTokenProvider.hasRole(token)) {
+            // Token이 유효하면 Token에서 Authentication 정보를 추출
             Authentication authentication = jwtTokenProvider.getAuthentication(token);
+
+            // 얻은 authentication 객체를 SecurityContextHolder에 넣어줌
+            // 해당 과정은 로그인 후 매 요청마다 실행되는 과정임
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
-        chain.doFilter(request, response);
+
+        filterChain.doFilter(request, response);
     }
 
 
-    // HTTP 요청에서 Token을 추출하는 과정
-    private String resolveToken(HttpServletRequest request) {
-
-        // request의 Authorization Header에서 bearerToken을 추출하는 과정
-        String bearerToken = request.getHeader("Authorization");
-
-        // bearerTokeb의 Header가 존재하고, Bearer 로 시작하는지 확인
-        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")) {
-            // 앞의 Bearer 접두사 제거, 실제 토큰만 반환
-            return bearerToken.substring(7, bearerToken.length());
-        }
-
-        // BearerToken 없으면 Null 반환
-        return null;
-    }
 }

@@ -70,6 +70,7 @@ public class CartOption {
 
     public void updateQuantity(int quantity) {
         this.quantity = quantity;
+        this.price = calculateCartOptionPrice();
     }
 
 }

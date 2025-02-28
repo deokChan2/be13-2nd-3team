@@ -1,104 +1,90 @@
 package com.beyond3.yyGang.security;
 
+import com.beyond3.yyGang.config.RedisConfig;
+import com.beyond3.yyGang.user.domain.Role_name;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.security.Key;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component  // 빈으로 등록할 예정
 public class JwtTokenProvider {
-    private final Key key;  // JWT 서명에 사용될 비밀 키
 
-    // Secret Key의 초기화 부분
+    private final SecretKey key;  // JWT 서명에 사용될 비밀 키
+    //    private final UserDetailsService userDetailsService;
+    private final long ACCESS_TOKEN_EXP = 1000L * 60L * 15L; // 15분
+    private final long REFRESH_TOKEN_EXP = 1000L * 60L * 60L * 15L;    // refresh 토큰 만료 기간
+    private final UserDetailsService userDetailsService;
+    private final RedisTemplate<String, String> redisTemplate;
+
+    // JwtTokenProvider 생성자
     public JwtTokenProvider(
-            // application.properties에서 설정한 비밀키를 가져옴
-            @Value("${jwt.secret.key}") String secretKey
-    ) {
+            @Value("${jwt.secret.key}") String secretKey,
+            UserDetailsService userDetailsService,
+            RedisTemplate<String, String> redisTemplate) {
+
         // Secret Key를 Base64로 디코딩 -> 바이트 배열로 변환
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         // HMAC-SHA 알고리즘을 사용할 수 있는 서명용 비밀 키로 변환, this.key에 저장
+        // BASE64 디코딩을 통해 더 안전하게 처리
         this.key = Keys.hmacShaKeyFor(keyBytes);
+
+        this.userDetailsService = userDetailsService;
+
+        this.redisTemplate = redisTemplate;
     }
 
-    // User 정보를 바탕으로 Access Token, Refresh Token 생성
-    public JwtToken generateToken(Authentication authentication) {
+    // Access Token 생성 메소드
+    public String createAccessToken(String username, Role_name role) {
+        Map<String, Object> claims = new HashMap<>();
 
-        // 권한 가져오기 -> 이후 AccessToken에 넣을 예정
-        String auths = authentication       // 현재 로그인한 사용자의 인증 정보를 담은 객체
-                .getAuthorities().stream()  // 사용자의 권한 목록을 반환 -> stream으로 변환
-                .map(GrantedAuthority::getAuthority)    // 실제 권한 문자열을 추출
-                .collect(Collectors.joining(","));  // 각 권한을 쉼표로 구분된 문자열로 반환
+        claims.put("username", username);
+        claims.put("role", role);
 
-        long now = (new Date()).getTime();   // 현재 시간
+        return createToken(claims, ACCESS_TOKEN_EXP);
+    }
 
-        Date accessTokenExp = new Date(now + 3600 * 1000);
+    public String createRefreshToken(String username) {
+        Map<String , Object > claims = Map.of("username" , username);
+        String refreshToken = createToken(claims, REFRESH_TOKEN_EXP);
 
-        // AccessToken 생성
-        String accessToken = Jwts.builder()
-                .subject(authentication.getName())  // 토큰 사용자 이름으로 설정
-                .claim("auths", auths)           // 사용자 권한을 "auths"라는 클레임으로 추가
-                .expiration(accessTokenExp)         // AccessToken 만료 기간 설정
-                .signWith(SignatureAlgorithm.HS512, key)    // 토큰에 서명하기 -> Hs512 알고리즘, key를 이용해서 서명
+        // 생성한 Refresh Token은 Redis 서버에 저장
+        redisTemplate.opsForValue().set("refreshToken", refreshToken, REFRESH_TOKEN_EXP, TimeUnit.MILLISECONDS);
+
+        return refreshToken;
+    }
+
+    public String createToken(Map<String , Object > claims, long tokenExp) {
+        return Jwts.builder()
+                .header().add("typ", "JWT").and()
+                .claims(claims)           // 사용자 권한을 "auths"라는 클레임으로 추가
+                .id(Long.toString(System.nanoTime()))   // 현재 시간을 기준으로 유니크한 jti(JWT ID) 생성
+                .issuedAt(new Date())   // 발급 시간 설정
+                .expiration(new Date(System.currentTimeMillis() + tokenExp))  // Key 만료 기간 설정
+                .signWith(key)
                 .compact();
-
-        // RefreshToken 생성
-        String refreshToken = Jwts.builder()
-                .expiration(new Date(now + 86400000))
-                .signWith(SignatureAlgorithm.HS512, key)
-                .compact();
-
-        // accessToken + refreshToken => JWT Token 생성, 반환
-        return JwtToken.builder()
-                .grantType("Bearer")
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
-    }
-
-    // JWT 토큰을 복호화해서 토큰에 들어있는 정보를 꺼내는 메서드
-    public Authentication getAuthentication(String accessToken) {
-        Claims claims = parseClaims(accessToken); // claims로 parsing
-
-        if(claims.get("auths") != null) {
-            throw new RuntimeException("권한 정보가 없는 Token입니다.");
-        }
-
-        // "auths" 라는 이름으로 만들어진 권한 claim을 꺼내서 권한 collection 리스트로 반환
-        Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get("auth").toString().split(","))
-                        .map(SimpleGrantedAuthority::new)   // 각 권한을 SimpleGrantedAuthoruty 객체로 변환
-                        .collect(Collectors.toList());
-
-        // UserDetails 객체를 만들어서 Authentication 반환
-        // UserDetails : interface
-        // User : UserDetails를 구현한 클래스
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
-        return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
 
 
-    // 토큰 정보 검증 메서드
+    // 토큰 정보 검증 메서드 ->> 남겨두자 이건
     public boolean validateToken(String token) {
         try{
             Jwts.parser()      // jwt parser 객체 생성 - JWT 토큰 분석, 안에 포함된 데이터 추출
@@ -118,16 +104,40 @@ public class JwtTokenProvider {
         return false;
     }
 
+    // 서버에 전달한 토큰 추출 메소드
+    public String resolveToken(String bearerToken) {
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+
+    // JWT 토큰을 복호화해서 토큰에 들어있는 정보를 꺼내는 메서드
+    // 꺼낸 정보를 바탕으로 SecurityHolder에 들어갈 Authentication 객체를 생성해줌
+    public Authentication getAuthentication(String token) {
+        // 토큰에서 사용자 이름 정보 가져오기
+        String username = parseClaims(token).get("username", String.class);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+    }
+
     // JWT 토큰에서 클레임(Claim)을 추출하는 메서드
-    private Claims parseClaims(String accessToken) {
+    private Claims parseClaims(String token) {
         try {
-            return  Jwts.parser()   // JWT Parser를 생성
-                    .verifyWith((SecretKey) key) // 서명 검증에 사용할 비밀 키 설정
+            return Jwts
+                    .parser()   // JWT Parser를 생성
+                    .verifyWith(key) // 서명 검증에 사용할 비밀 키 설정
                     .build()
-                    .parseSignedClaims(accessToken) // JWT 토큰을 파싱해 claim 생성
-                    .getBody();     // claim 반환
+                    .parseSignedClaims(token) // JWT 토큰을 파싱해 claim 생성
+                    .getPayload();     // claim 반환
         } catch (ExpiredJwtException e) {
             return e.getClaims();   // 만료된 토큰일 경우 예외에서 claim을 반환
         }
     }
+
+    public boolean hasRole(String token) {
+        return parseClaims(token).get("role") != null;
+    }
+
 }

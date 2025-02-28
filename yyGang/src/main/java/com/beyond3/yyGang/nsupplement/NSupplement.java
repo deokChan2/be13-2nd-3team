@@ -6,10 +6,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
 @Table(name = "n_supplement")
 public class NSupplement {
 
@@ -45,4 +52,24 @@ public class NSupplement {
 //    @OneToMany(mappedBy = "nSupplements")
 //    private List<CartOption> cartOptions;
 
+    public NSupplementRegisterDto toDto(){
+        return NSupplementRegisterDto.builder()
+                .productName(productName)
+                .brand(this.brand)
+                .caution(this.caution)
+                .price(this.price)
+                .stockQuantity(this.stockQuantity)
+                .build();
+    }
+
+    public void decreaseStockQuantity(int quantity){
+        if(stockQuantity - quantity >= 0){
+            throw new IllegalStateException("재고가 충분하지 않습니다.");
+        }
+        this.stockQuantity -= quantity;
+    }
+
+    public void increaseStockQuantity(int quantity){
+        this.stockQuantity += quantity;
+    }
 }
