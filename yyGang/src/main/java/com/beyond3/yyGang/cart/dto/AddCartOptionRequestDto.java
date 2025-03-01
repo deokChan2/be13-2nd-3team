@@ -15,7 +15,7 @@ public class AddCartOptionRequestDto {
     @NotNull(message = "상품이 제대로 확인되지 않았습니다.")
     private Long nSupplementId;
 
-    @Min(value = 1, message = "수량은 최소 1개 이상이어야 합니다.")
+    // @Min(value = 1, message = "수량은 최소 1개 이상이어야 합니다.")
     private int quantity;
 
 }
