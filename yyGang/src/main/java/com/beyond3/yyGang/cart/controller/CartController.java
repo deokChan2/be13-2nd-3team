@@ -1,6 +1,5 @@
 package com.beyond3.yyGang.cart.controller;
 
-import com.beyond3.yyGang.cart.Cart;
 import com.beyond3.yyGang.cart.CartOption;
 import com.beyond3.yyGang.cart.dto.AddCartOptionRequestDto;
 import com.beyond3.yyGang.cart.dto.CartOptionDto;
@@ -8,7 +7,7 @@ import com.beyond3.yyGang.cart.dto.CartResponseDto;
 import com.beyond3.yyGang.cart.repository.CartOptionRepository;
 import com.beyond3.yyGang.cart.repository.CartRepository;
 import com.beyond3.yyGang.cart.service.CartService;
-import com.beyond3.yyGang.nsupplement.NSupplementRepository;
+import com.beyond3.yyGang.nsupplement.repository.NSupplementRepository;
 import com.beyond3.yyGang.security.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.persistence.EntityNotFoundException;
@@ -27,8 +26,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @Slf4j
 @RestController

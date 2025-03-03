@@ -1,6 +1,8 @@
-package com.beyond3.yyGang.nsupplement;
+package com.beyond3.yyGang.nsupplement.service;
 
-import com.beyond3.yyGang.user.dto.UserInfoDto;
+import com.beyond3.yyGang.nsupplement.NSupplement;
+import com.beyond3.yyGang.nsupplement.dto.NSupplementRegisterDto;
+import com.beyond3.yyGang.nsupplement.repository.NSupplementRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

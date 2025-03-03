@@ -40,7 +40,7 @@ public class CartOption {
         this.cart = cart;
         this.nSupplement = nSupplement;
         this.quantity = quantity;
-        this.price = calculateCartOptionPrice();
+        this.price = calculateCartOptionTotalPrice();
         this.cart.addCartOption(this);
     }
 
@@ -64,13 +64,13 @@ public class CartOption {
     }
 */
     // 장바구니옵션 총 가격 계산
-    private int calculateCartOptionPrice() {
+    private int calculateCartOptionTotalPrice() {
         return this.nSupplement.getPrice() * this.quantity;
     }
 
     public void updateQuantity(int quantity) {
         this.quantity = quantity;
-        this.price = calculateCartOptionPrice();
+        this.price = calculateCartOptionTotalPrice();
     }
 
 }

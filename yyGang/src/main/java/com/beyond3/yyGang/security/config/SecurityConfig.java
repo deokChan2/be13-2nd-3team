@@ -47,6 +47,7 @@ public class SecurityConfig {
                                 .requestMatchers("/user/join").permitAll() // 로그인 하지 않은 사용자 회원가입 페이지 접근 가능
                                 .requestMatchers("/user/login").permitAll() // 로그인 하지 않는 사용자 login 페이지 접근 가능
                                 .requestMatchers("/cart/**").permitAll()
+                                .requestMatchers("/nsupplement/**").permitAll()
                                 .anyRequest().authenticated());  // 위에 명시된 경로 외의 다른 모든 요청은 인증된 사용자만 접근할 수 있도록 설정
         // JWT Token 인증 방식의 미리 만들어둔 Filter를 Filter Chain에 추가
 

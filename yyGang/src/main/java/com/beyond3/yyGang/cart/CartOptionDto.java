@@ -1,7 +1,5 @@
 package com.beyond3.yyGang.cart;
 
-import com.beyond3.yyGang.nsupplement.NSupplement;
-import com.beyond3.yyGang.nsupplement.NSupplementRepository;
 import lombok.Data;
 
 @Data

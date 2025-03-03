@@ -1,20 +1,15 @@
 package com.beyond3.yyGang.order.service;
 
-import com.beyond3.yyGang.cart.CartOption;
-import com.beyond3.yyGang.cart.CartOptionDto;
 import com.beyond3.yyGang.cart.CartRequestDto;
 import com.beyond3.yyGang.nsupplement.NSupplement;
-import com.beyond3.yyGang.nsupplement.NSupplementRegisterDto;
-import com.beyond3.yyGang.nsupplement.NSupplementRepository;
+import com.beyond3.yyGang.nsupplement.repository.NSupplementRepository;
 import com.beyond3.yyGang.order.Order;
 import com.beyond3.yyGang.order.OrderOption;
-import com.beyond3.yyGang.order.OrderStatus;
 import com.beyond3.yyGang.order.dto.OrderDto;
 import com.beyond3.yyGang.order.dto.OrderOptionDto;
 import com.beyond3.yyGang.order.dto.OrderResultDto;
 import com.beyond3.yyGang.order.repository.OrderOptionRepository;
 import com.beyond3.yyGang.order.repository.OrderRepository;
-import com.beyond3.yyGang.pay.PersonalAccount;
 import com.beyond3.yyGang.pay.repository.PersonalAccountRepository;
 import com.beyond3.yyGang.security.JwtTokenProvider;
 import com.beyond3.yyGang.user.domain.User;
@@ -23,7 +18,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service

@@ -30,7 +30,7 @@ public class Cart {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "cart", fetch = FetchType.LAZY) // 나중에 cascade 고려
+    @OneToMany(mappedBy = "cart") // 나중에 cascade 고려
     private List<CartOption> cartOptions = new ArrayList<>();
 
     protected Cart() {
@@ -48,6 +48,8 @@ public class Cart {
     public static Cart createCart(User user) {
         return new Cart(user);
     }
+
+
 
     /*public CartDto toCartDto() {
         CartDto.builder()

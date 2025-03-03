@@ -1,7 +1,7 @@
 package com.beyond3.yyGang.pay.service;
 
 import com.beyond3.yyGang.nsupplement.NSupplement;
-import com.beyond3.yyGang.nsupplement.NSupplementRepository;
+import com.beyond3.yyGang.nsupplement.repository.NSupplementRepository;
 import com.beyond3.yyGang.order.Order;
 import com.beyond3.yyGang.order.OrderStatus;
 import com.beyond3.yyGang.order.dto.OrderOptionDto;
