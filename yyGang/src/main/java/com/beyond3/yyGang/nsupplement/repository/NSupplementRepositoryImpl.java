@@ -2,12 +2,15 @@ package com.beyond3.yyGang.nsupplement.repository;
 
 import com.beyond3.yyGang.nsupplement.dto.NSupplementResponseDto;
 import com.beyond3.yyGang.nsupplement.dto.NSupplementSearchRequestDto;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import org.eclipse.tags.shaded.org.apache.xpath.operations.Bool;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +33,7 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
     @Override
     public Page<NSupplementResponseDto> searchPage(NSupplementSearchRequestDto searchRequest, Pageable pageable, SortType sortType) {
 
-        List<NSupplementResponseDto> content = queryFactory
+        /*List<NSupplementResponseDto> content = queryFactory
                 .select(Projections.constructor(NSupplementResponseDto.class,
                         nSupplement.productName,
                         nSupplement.caution,
@@ -46,9 +49,33 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                 .orderBy(sortType.getOrderSpecifier())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
+                .fetch();*/
+
+        List<NSupplementResponseDto> content = queryFactory
+                .select(Projections.constructor(NSupplementResponseDto.class,
+                        nSupplement.productName,
+                        nSupplement.caution,
+                        nSupplement.brand,
+                        nSupplement.price
+                ))
+                .from(nSupplement)
+                .leftJoin(hFunctionalCategory)
+                .on(nSupplement.productId.eq(hFunctionalCategory.nSupplement.productId))
+                .leftJoin(ingredientCategory)
+                .on(nSupplement.productId.eq(ingredientCategory.nSupplement.productId))
+                .where(
+                        healthIdEq(searchRequest.getHealthId()),
+                        ingredientIdEq(searchRequest.getIngredientID()),
+                        productNameContains(searchRequest.getProductName())
+                )
+                .groupBy(nSupplement.productId)
+                .orderBy(sortType.getOrderSpecifier())
+                .limit(1)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
 
-        Long total = queryFactory
+        /*Long total = queryFactory
                 .select(nSupplement.count())
                 .from(nSupplement)
                 .where(
@@ -56,10 +83,31 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                         ingredientIDEqExists(searchRequest.getIngredientID()),
                         productNameContains(searchRequest.getProductName())
                 )
+                .fetchOne();*/
+
+        Long total = queryFactory
+                .select(nSupplement.count())
+                .from(nSupplement)
+                .leftJoin(hFunctionalCategory).on(nSupplement.productId.eq(hFunctionalCategory.nSupplement.productId))
+                .leftJoin(ingredientCategory).on(nSupplement.productId.eq(ingredientCategory.nSupplement.productId))
+                .where(
+                        healthIdEq(searchRequest.getHealthId()),
+                        ingredientIdEq(searchRequest.getIngredientID()),
+                        productNameContains(searchRequest.getProductName())
+                )
+                .groupBy(nSupplement.productId)
+                .limit(1)
                 .fetchOne();
 
-
         return new PageImpl<>(content, pageable, total != null ? total : 0L);
+    }
+
+    private BooleanExpression ingredientIdEq(Long ingredientID) {
+        return ingredientID != null ? ingredientCategory.ingredient.ingredientID.eq(ingredientID) : null;
+    }
+
+    private BooleanExpression healthIdEq(Long healthId) {
+        return healthId != null ? hFunctionalCategory.hFunctionalItem.healthId.eq(healthId) : null;
     }
 
 
