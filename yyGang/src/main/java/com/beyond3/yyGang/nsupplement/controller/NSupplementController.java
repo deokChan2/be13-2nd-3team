@@ -4,6 +4,7 @@ import com.beyond3.yyGang.nsupplement.NSupplement;
 import com.beyond3.yyGang.nsupplement.dto.NSupplementRegisterDto;
 import com.beyond3.yyGang.nsupplement.dto.NSupplementResponseDto;
 import com.beyond3.yyGang.nsupplement.dto.NSupplementSearchRequestDto;
+import com.beyond3.yyGang.nsupplement.dto.PageResponseDto;
 import com.beyond3.yyGang.nsupplement.repository.NSupplementRepository;
 import com.beyond3.yyGang.nsupplement.repository.SortType;
 import com.beyond3.yyGang.nsupplement.service.NSupplementService;
@@ -47,9 +48,10 @@ public class NSupplementController {
     }
 
     @GetMapping("/info/search")
-    public ResponseEntity<Page<NSupplementResponseDto>> infoSearch(@ModelAttribute NSupplementSearchRequestDto nSupplementSearchRequestDto, Pageable pageable) {
-        Page<NSupplementResponseDto> nSupplements = nSupplementRepository.searchPage(nSupplementSearchRequestDto, pageable, SortType.requestSortType(nSupplementSearchRequestDto.getSortType()));
-        return ResponseEntity.ok(nSupplements);
+    public ResponseEntity<PageResponseDto<NSupplementResponseDto>> infoSearch(@ModelAttribute NSupplementSearchRequestDto nSupplementSearchRequestDto, Pageable pageable) {
+        PageResponseDto<NSupplementResponseDto> page = nSupplementRepository.searchPage(nSupplementSearchRequestDto, pageable, SortType.requestSortType(nSupplementSearchRequestDto.getSortType()));
+
+        return ResponseEntity.ok(page);
     }
 
     /*@GetMapping("/info/search")
