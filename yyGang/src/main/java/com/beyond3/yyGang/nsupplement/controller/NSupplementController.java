@@ -49,6 +49,7 @@ public class NSupplementController {
 
     @GetMapping("/info/search")
     public ResponseEntity<PageResponseDto<NSupplementResponseDto>> infoSearch(@ModelAttribute NSupplementSearchRequestDto nSupplementSearchRequestDto, Pageable pageable) {
+
         PageResponseDto<NSupplementResponseDto> page = nSupplementRepository.searchPage(nSupplementSearchRequestDto, pageable, SortType.requestSortType(nSupplementSearchRequestDto.getSortType()));
 
         return ResponseEntity.ok(page);

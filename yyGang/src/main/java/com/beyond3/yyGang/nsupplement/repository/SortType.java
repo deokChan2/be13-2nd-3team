@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +14,6 @@ import static com.beyond3.yyGang.nsupplement.QNSupplement.*;
 @Getter
 @RequiredArgsConstructor
 public enum SortType {
-    // OrderSpecifier 에 한번에 넣어도 되나? 생성자에는 그런거 없는 거 같은데
     PRICE_ASC(nSupplement.price.asc()),
     PRICE_DESC(nSupplement.price.desc()),
     /*REVIEW_ASC(),
@@ -25,8 +25,15 @@ public enum SortType {
 
     // 예외처리 생각해야 함
     public static SortType requestSortType(String sortTypeName) {
-
+        
+        // ENUM에 없는 값을 가져오면 예외 처리 
         return EnumUtil.getEnumValue(SortType.class, sortTypeName);
+
+        // ENUM에 없는 값을 가져오면 NAME_ASC를 기본값으로 처리
+        /*return Arrays.stream(SortType.values())
+                .filter(type -> type.name().equalsIgnoreCase(sortTypeName))
+                .findFirst()
+                .orElse(NAME_ASC);*/
 
         /*if (sortTypeName.isBlank()) {
             return NAME_ASC; // 기본 정렬 (이름 오름차순) -> 이거는 나중에 등록순 같은걸로 바꿔야 할듯
