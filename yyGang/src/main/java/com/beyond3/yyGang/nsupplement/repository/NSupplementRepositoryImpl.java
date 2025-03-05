@@ -20,6 +20,8 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.beyond3.yyGang.hfunction.QHFunctionalCategory.*;
 import static com.beyond3.yyGang.ingredient.QIngredientCategory.*;
@@ -53,6 +55,18 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+
+        /*Map<Long, List<String>> projectTechMap = queryFactory
+                .select(projectTech.tech.no, projectTech.tech.techName)
+                .from(projectTech)
+                .where(projectTech.projectId.in(projectList))
+                .fetch()
+                .stream()
+                .collect(Collectors.groupingBy( // stream 요소들을 groupingBY 를 통해 Map 객체로 반환
+                        tuple -> tuple.get(projectTech.projectId), // projectId 로 그룹화
+                        Collectors.mapping(tuple -> tuple.get(projectTech.tech.techName), Collectors.toList())
+                ));*/
+
 
         /*List<NSupplementResponseDto> content = queryFactory
                 .select(Projections.constructor(NSupplementResponseDto.class,

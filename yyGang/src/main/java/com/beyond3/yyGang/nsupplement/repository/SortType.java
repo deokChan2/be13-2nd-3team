@@ -27,13 +27,13 @@ public enum SortType {
     public static SortType requestSortType(String sortTypeName) {
         
         // ENUM에 없는 값을 가져오면 예외 처리 
-        return EnumUtil.getEnumValue(SortType.class, sortTypeName);
+        // return EnumUtil.getEnumValue(SortType.class, sortTypeName);
 
         // ENUM에 없는 값을 가져오면 NAME_ASC를 기본값으로 처리
-        /*return Arrays.stream(SortType.values())
+        return Arrays.stream(SortType.values())
                 .filter(type -> type.name().equalsIgnoreCase(sortTypeName))
                 .findFirst()
-                .orElse(NAME_ASC);*/
+                .orElse(NAME_ASC);
 
         /*if (sortTypeName.isBlank()) {
             return NAME_ASC; // 기본 정렬 (이름 오름차순) -> 이거는 나중에 등록순 같은걸로 바꿔야 할듯
