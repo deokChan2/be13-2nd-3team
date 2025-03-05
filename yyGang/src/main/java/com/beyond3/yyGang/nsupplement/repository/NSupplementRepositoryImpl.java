@@ -54,8 +54,6 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-
-        // 이걸로 했을 때 페이징 처리에서 totalPages가 이상하게 나왔음
         /*List<NSupplementResponseDto> content = queryFactory
                 .select(Projections.constructor(NSupplementResponseDto.class,
                         nSupplement.productName,
@@ -75,7 +73,6 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                 )
                 .groupBy(nSupplement.productId)
                 .orderBy(sortType.getOrderSpecifier())
-                .limit(1)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();*/
@@ -89,9 +86,9 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                         productNameContains(searchRequest.getProductName())
                 );
 
-
+        // countDistinct는 대량의 데이터를 처리할 때 성능에 낮아질 수 있어서 성능 테스트 필요
         /*JPAQuery<Long> countQuery = queryFactory
-                .select(nSupplement.count())
+                .select(nSupplement.countDistinct())
                 .from(nSupplement)
                 .leftJoin(hFunctionalCategory).on(nSupplement.productId.eq(hFunctionalCategory.nSupplement.productId))
                 .leftJoin(ingredientCategory).on(nSupplement.productId.eq(ingredientCategory.nSupplement.productId))
@@ -99,14 +96,10 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                         healthIdEq(searchRequest.getHealthId()),
                         ingredientIdEq(searchRequest.getIngredientID()),
                         productNameContains(searchRequest.getProductName())
-                )
-                .groupBy(nSupplement.productId)
-                .limit(1);*/
+                );*/
 
         Page<NSupplementResponseDto> page = PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
 
-
-        // return new PageImpl<>(content, pageable, total != null ? total : 0L);
         return new PageResponseDto<>(page);
     }
 
