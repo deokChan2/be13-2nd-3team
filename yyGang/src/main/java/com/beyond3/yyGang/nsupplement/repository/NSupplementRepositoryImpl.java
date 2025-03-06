@@ -160,7 +160,7 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
         return new PageResponseDto<>(page);
     }
 
-    public PageResponseDto<NSupplementResponseDtoV2> searchPageV3(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {
+    /*public PageResponseDto<NSupplementResponseDtoV2> searchPageV3(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {
 
         List<NSupplement> nSupplements = queryFactory
                 .select(nSupplement)
@@ -237,7 +237,7 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
         Page<NSupplementResponseDtoV2> page = new PageImpl<>(content, pageable, totalCount != null ? totalCount : 0);
 
         return new PageResponseDto<>(page);
-    }
+    }*/
 
     // 이거는 코딩할수록 이상해지는듯한.. 별로 안 좋은듯
     /*public PageResponseDto<NSupplementResponseDtoV2> searchPageV3(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {
