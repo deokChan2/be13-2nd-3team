@@ -6,11 +6,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class PageResponseDto<T> {
+public class PageResponseDto<T> implements Serializable {
 
     private List<T> content;  // 페이징된 결과
     private long totalElements; // 전체 항목 수

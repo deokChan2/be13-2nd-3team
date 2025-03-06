@@ -13,6 +13,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.util.StringUtils;
@@ -178,14 +179,24 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                 .fetch();
 
 
-        JPAQuery<Long> countQuery = queryFactory
+        /*JPAQuery<Long> countQuery = queryFactory
                 .select(nSupplement.count())
                 .from(nSupplement)
                 .where(
                         healthIdsEq(searchRequest.getHealthIds()),
                         ingredientIdsEq(searchRequest.getIngredientIds()),
                         productNameContains(searchRequest.getProductName())
-                );
+                );*/
+
+        Long totalCount = queryFactory
+                .select(nSupplement.count())
+                .from(nSupplement)
+                .where(
+                        healthIdsEq(searchRequest.getHealthIds()),
+                        ingredientIdsEq(searchRequest.getIngredientIds()),
+                        productNameContains(searchRequest.getProductName())
+                )
+                .fetchOne();
 
         List<Tuple> hFuncCateTuple = queryFactory
                 .select(
@@ -287,7 +298,10 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
 
         List<NSupplementResponseDtoV2> content = nSupplementMap.values().stream().toList();
 
-        Page<NSupplementResponseDtoV2> page = PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+        // Page<NSupplementResponseDtoV2> page = PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+        // return new PageResponseDto<>(page);
+
+        Page<NSupplementResponseDtoV2> page = new PageImpl<>(content, pageable, totalCount != null ? totalCount : 0);
 
         return new PageResponseDto<>(page);
     }
@@ -314,10 +328,10 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                         ingredientIdsEq(searchRequest.getIngredientIds()),
                         productNameContains(searchRequest.getProductName())
                 );
-                *//*.orderBy(sortType.getOrderSpecifier())
+                .orderBy(sortType.getOrderSpecifier())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .fetch();*//*
+                .fetch();
 
         tupleJPAQuery
 
@@ -352,56 +366,6 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
 
 
 
-        *//*Map<Long, List<String>> healthFuncMap = queryFactory
-                .select(
-                        hFunctionalCategory.nSupplement.productId,
-                        hFunctionalItem.healthName
-                )
-                .from(hFunctionalCategory)
-                .join(hFunctionalCategory.hFunctionalItem, hFunctionalItem)
-                .where(hFunctionalCategory.nSupplement.in(nSupplements))
-                .fetch()
-                .stream()
-                .collect(Collectors.groupingBy(
-                        tuple -> tuple.get(hFunctionalCategory.nSupplement.productId),
-                        LinkedHashMap::new,
-                        Collectors.mapping(tuple -> tuple.get(hFunctionalItem.healthName), Collectors.toList())
-                ));*//*
-
-
-        *//*Map<Long, List<String>> ingredientMap = queryFactory
-                .select(
-                        ingredientCategory.nSupplement.productId,
-                        ingredient1.ingredient
-                )
-                .from(ingredientCategory)
-                .join(ingredientCategory.ingredient, ingredient1)
-                .where(ingredientCategory.nSupplement.in(nSupplements))
-                .fetch()
-                .stream()
-                .collect(Collectors.groupingBy(
-                        tuple -> tuple.get(ingredientCategory.nSupplement.productId),
-                        LinkedHashMap::new,
-                        Collectors.mapping(tuple -> tuple.get(ingredient1.ingredient), Collectors.toList())
-                ));*//*
-
-
-        *//*List<NSupplementResponseDtoV2> content = nSupplements.stream()
-                .map(supplement -> {
-                    NSupplementResponseDtoV2 dto = new NSupplementResponseDtoV2();
-                    dto.setProductId(supplement.getProductId());
-
-                    // 기능성 카테고리 추가
-                    dto.setHealthNames(healthFuncMap.getOrDefault(supplement.getProductId(), new ArrayList<>()));
-
-                    // 원료 카테고리 추가
-                    dto.setIngredients(ingredientMap.getOrDefault(supplement.getProductId(), new ArrayList<>()));
-
-                    return dto;
-                })
-                .toList();*//*
-
-        List<NSupplementResponseDtoV2> content = nSupplementMap.values().stream().toList();
 
         Page<NSupplementResponseDtoV2> page = PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
 
