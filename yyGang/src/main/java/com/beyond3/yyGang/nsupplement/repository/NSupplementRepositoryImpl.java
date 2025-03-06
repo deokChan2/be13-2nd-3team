@@ -160,7 +160,8 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
         return new PageResponseDto<>(page);
     }
 
-    /*public PageResponseDto<NSupplementResponseDtoV2> searchPageV3(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {
+    // 테스트 해봐야대
+    public PageResponseDto<NSupplementResponseDtoV2> searchPageV3(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {
 
         List<NSupplement> nSupplements = queryFactory
                 .select(nSupplement)
@@ -225,7 +226,6 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                                     nsupplement.getPrice()
                             );
 
-                    // 이거 new ArrayList<>() 사용하는 거 아닌 거 같은데 다시
                     dto.setHealthNames(healthFuncMap.getOrDefault(nsupplement.getProductId(), new ArrayList<>()));
 
                     dto.setIngredients(ingredientMap.getOrDefault(nsupplement.getProductId(), new ArrayList<>()));
@@ -237,7 +237,7 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
         Page<NSupplementResponseDtoV2> page = new PageImpl<>(content, pageable, totalCount != null ? totalCount : 0);
 
         return new PageResponseDto<>(page);
-    }*/
+    }
 
     // 이거는 코딩할수록 이상해지는듯한.. 별로 안 좋은듯
     /*public PageResponseDto<NSupplementResponseDtoV2> searchPageV3(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {

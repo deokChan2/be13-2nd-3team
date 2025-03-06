@@ -43,4 +43,5 @@ public class NSupplementResponseDtoV2 {
     public void addHealthName(String healthName) {
         this.healthNames.add(healthName);
     }
+
 }
