@@ -60,29 +60,6 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        /*List<NSupplementResponseDto> content = queryFactory
-                .select(Projections.constructor(NSupplementResponseDto.class,
-                        nSupplement.productName,
-                        nSupplement.caution,
-                        nSupplement.brand,
-                        nSupplement.price
-                ))
-                .from(nSupplement)
-                .leftJoin(hFunctionalCategory)
-                .on(nSupplement.productId.eq(hFunctionalCategory.nSupplement.productId))
-                .leftJoin(ingredientCategory)
-                .on(nSupplement.productId.eq(ingredientCategory.nSupplement.productId))
-                .where(
-                        healthIdEq(searchRequest.getHealthId()),
-                        ingredientIdEq(searchRequest.getIngredientID()),
-                        productNameContains(searchRequest.getProductName())
-                )
-                .groupBy(nSupplement.productId)
-                .orderBy(sortType.getOrderSpecifier())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();*/
-
         JPAQuery<Long> countQuery = queryFactory
                 .select(nSupplement.count())
                 .from(nSupplement)
@@ -92,18 +69,6 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                         productNameContains(searchRequest.getProductName())
                 );
 
-        // countDistinct는 대량의 데이터를 처리할 때 성능에 낮아질 수 있어서 성능 테스트 필요
-        /*JPAQuery<Long> countQuery = queryFactory
-                .select(nSupplement.countDistinct())
-                .from(nSupplement)
-                .leftJoin(hFunctionalCategory).on(nSupplement.productId.eq(hFunctionalCategory.nSupplement.productId))
-                .leftJoin(ingredientCategory).on(nSupplement.productId.eq(ingredientCategory.nSupplement.productId))
-                .where(
-                        healthIdEq(searchRequest.getHealthId()),
-                        ingredientIdEq(searchRequest.getIngredientID()),
-                        productNameContains(searchRequest.getProductName())
-                );*/
-
         Page<NSupplementResponseDto> page = PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
 
         return new PageResponseDto<>(page);
@@ -112,59 +77,8 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
     @Override
     public PageResponseDto<NSupplementResponseDtoV2> searchPageV2(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {
 
-        /*List<Tuple> tupleList = queryFactory
-                .select(
-                        nSupplement.productId,
-                        nSupplement.productName,
-                        nSupplement.caution,
-                        nSupplement.brand,
-                        nSupplement.price,
-                        hFunctionalItem.healthName,
-                        ingredient1.ingredient
-                )
-                .from(nSupplement)
-                .leftJoin(hFunctionalCategory).on(nSupplement.productId.eq(hFunctionalCategory.nSupplement.productId))
-                .join(hFunctionalCategory.hFunctionalItem, hFunctionalItem)
-                .leftJoin(ingredientCategory).on(nSupplement.productId.eq(ingredientCategory.nSupplement.productId))
-                .join(ingredientCategory.ingredient, ingredient1)
-                .where(
-                        healthIdsEq(searchRequest.getHealthIds()),
-                        ingredientIdsEq(searchRequest.getIngredientIds()),
-                        productNameContains(searchRequest.getProductName())
-                )
-                .orderBy(sortType.getOrderSpecifier())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
-
-        Map<Long, NSupplementResponseDtoV2> nSupplementMap = new LinkedHashMap<>();
-
-        for (Tuple tuple : tupleList) {
-            Long productId = tuple.get(nSupplement.productId);
-            if (!nSupplementMap.containsKey(productId)) {
-                nSupplementMap.put(productId,
-                        new NSupplementResponseDtoV2(
-                                tuple.get(nSupplement.productName),
-                                tuple.get(nSupplement.caution),
-                                tuple.get(nSupplement.brand),
-                                tuple.get(nSupplement.price)
-                        )
-                );
-            }
-            if (tuple.get(hFunctionalItem.healthName) != null) {
-                nSupplementMap.get(productId).addHealthName(tuple.get(hFunctionalItem.healthName));
-            }
-
-            if (tuple.get(ingredient1.ingredient) != null) {
-                nSupplementMap.get(productId).addIngredient(tuple.get(ingredient1.ingredient));
-            }
-        }
-
-        List<NSupplementResponseDtoV2> content = nSupplementMap.values().stream().toList();
-
-        long count = nSupplementMap.size();*/
-
-
+        // MySQL과 같은 DB에서는 orderBy 정렬 기준이 없으면 결과가 랜덤하게 나올 수 있음
+        // 리뷰순 정렬이 들어가면 고쳐야 할듯
         List<NSupplement> nSupplements = queryFactory
                 .select(nSupplement)
                 .from(nSupplement)
@@ -177,16 +91,6 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
-
-
-        /*JPAQuery<Long> countQuery = queryFactory
-                .select(nSupplement.count())
-                .from(nSupplement)
-                .where(
-                        healthIdsEq(searchRequest.getHealthIds()),
-                        ingredientIdsEq(searchRequest.getIngredientIds()),
-                        productNameContains(searchRequest.getProductName())
-                );*/
 
         Long totalCount = queryFactory
                 .select(nSupplement.count())
@@ -208,22 +112,6 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                 .where(hFunctionalCategory.nSupplement.in(nSupplements))
                 .fetch();
 
-        /*Map<Long, List<String>> healthFuncMap = queryFactory
-                .select(
-                        hFunctionalCategory.nSupplement.productId,
-                        hFunctionalItem.healthName
-                )
-                .from(hFunctionalCategory)
-                .join(hFunctionalCategory.hFunctionalItem, hFunctionalItem)
-                .where(hFunctionalCategory.nSupplement.in(nSupplements))
-                .fetch()
-                .stream()
-                .collect(Collectors.groupingBy(
-                        tuple -> tuple.get(hFunctionalCategory.nSupplement.productId),
-                        LinkedHashMap::new,
-                        Collectors.mapping(tuple -> tuple.get(hFunctionalItem.healthName), Collectors.toList())
-                ));*/
-
         List<Tuple> ingrCateTuple = queryFactory
                 .select(
                         ingredientCategory.nSupplement.productId,
@@ -233,22 +121,6 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                 .join(ingredientCategory.ingredient, ingredient1)
                 .where(ingredientCategory.nSupplement.in(nSupplements))
                 .fetch();
-
-        /*Map<Long, List<String>> ingredientMap = queryFactory
-                .select(
-                        ingredientCategory.nSupplement.productId,
-                        ingredient1.ingredient
-                )
-                .from(ingredientCategory)
-                .join(ingredientCategory.ingredient, ingredient1)
-                .where(ingredientCategory.nSupplement.in(nSupplements))
-                .fetch()
-                .stream()
-                .collect(Collectors.groupingBy(
-                        tuple -> tuple.get(ingredientCategory.nSupplement.productId),
-                        LinkedHashMap::new,
-                        Collectors.mapping(tuple -> tuple.get(ingredient1.ingredient), Collectors.toList())
-                ));*/
 
         Map<Long, NSupplementResponseDtoV2> nSupplementMap = new LinkedHashMap<>();
         
@@ -281,34 +153,96 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
             }
         }
 
-        /*List<NSupplementResponseDtoV2> content = nSupplements.stream()
-                .map(supplement -> {
-                    NSupplementResponseDtoV2 dto = new NSupplementResponseDtoV2();
-                    dto.setProductId(supplement.getProductId());
-
-                    // 기능성 카테고리 추가
-                    dto.setHealthNames(healthFuncMap.getOrDefault(supplement.getProductId(), new ArrayList<>()));
-
-                    // 원료 카테고리 추가
-                    dto.setIngredients(ingredientMap.getOrDefault(supplement.getProductId(), new ArrayList<>()));
-
-                    return dto;
-                })
-                .toList();*/
-
         List<NSupplementResponseDtoV2> content = nSupplementMap.values().stream().toList();
-
-        // Page<NSupplementResponseDtoV2> page = PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
-        // return new PageResponseDto<>(page);
 
         Page<NSupplementResponseDtoV2> page = new PageImpl<>(content, pageable, totalCount != null ? totalCount : 0);
 
         return new PageResponseDto<>(page);
     }
 
+    public PageResponseDto<NSupplementResponseDtoV2> searchPageV3(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {
+
+        List<NSupplement> nSupplements = queryFactory
+                .select(nSupplement)
+                .from(nSupplement)
+                .where(
+                        healthIdsEq(searchRequest.getHealthIds()),
+                        ingredientIdsEq(searchRequest.getIngredientIds()),
+                        productNameContains(searchRequest.getProductName())
+                )
+                .orderBy(sortType.getOrderSpecifier())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long totalCount = queryFactory
+                .select(nSupplement.count())
+                .from(nSupplement)
+                .where(
+                        healthIdsEq(searchRequest.getHealthIds()),
+                        ingredientIdsEq(searchRequest.getIngredientIds()),
+                        productNameContains(searchRequest.getProductName())
+                )
+                .fetchOne();
+
+        Map<Long, List<String>> healthFuncMap = queryFactory
+                .select(
+                        hFunctionalCategory.nSupplement.productId,
+                        hFunctionalItem.healthName
+                )
+                .from(hFunctionalCategory)
+                .join(hFunctionalCategory.hFunctionalItem, hFunctionalItem)
+                .where(hFunctionalCategory.nSupplement.in(nSupplements))
+                .fetch()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        tuple -> tuple.get(hFunctionalCategory.nSupplement.productId),
+                        Collectors.mapping(tuple -> tuple.get(hFunctionalItem.healthName), Collectors.toList())
+                ));
+
+        Map<Long, List<String>> ingredientMap = queryFactory
+                .select(
+                        ingredientCategory.nSupplement.productId,
+                        ingredient1.ingredient
+                )
+                .from(ingredientCategory)
+                .join(ingredientCategory.ingredient, ingredient1)
+                .where(ingredientCategory.nSupplement.in(nSupplements))
+                .fetch()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        tuple -> tuple.get(ingredientCategory.nSupplement.productId),
+                        Collectors.mapping(tuple -> tuple.get(ingredient1.ingredient), Collectors.toList())
+                ));
+
+        List<NSupplementResponseDtoV2> content = nSupplements.stream()
+                .map(nsupplement -> {
+                    NSupplementResponseDtoV2 dto =
+                            new NSupplementResponseDtoV2(
+                                    nsupplement.getProductName(),
+                                    nsupplement.getCaution(),
+                                    nsupplement.getBrand(),
+                                    nsupplement.getPrice()
+                            );
+
+                    // 이거 new ArrayList<>() 사용하는 거 아닌 거 같은데 다시
+                    dto.setHealthNames(healthFuncMap.getOrDefault(nsupplement.getProductId(), new ArrayList<>()));
+
+                    dto.setIngredients(ingredientMap.getOrDefault(nsupplement.getProductId(), new ArrayList<>()));
+
+                    return dto;
+                })
+                .toList();
+
+        Page<NSupplementResponseDtoV2> page = new PageImpl<>(content, pageable, totalCount != null ? totalCount : 0);
+
+        return new PageResponseDto<>(page);
+    }
+
+    // 이거는 코딩할수록 이상해지는듯한.. 별로 안 좋은듯
     /*public PageResponseDto<NSupplementResponseDtoV2> searchPageV3(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {
 
-        JPAQuery<Tuple> tupleJPAQuery = queryFactory
+        List<Tuple> tupleList = queryFactory
                 .select(
                         nSupplement.productId,
                         nSupplement.productName,
@@ -327,15 +261,32 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                         healthIdsEq(searchRequest.getHealthIds()),
                         ingredientIdsEq(searchRequest.getIngredientIds()),
                         productNameContains(searchRequest.getProductName())
-                );
+                )
+                .orderBy(sortType.getOrderSpecifier())
+                .fetch();
+
+        List<NSupplement> nSupplements = queryFactory
+                .select(nSupplement)
+                .from(nSupplement)
+                .where(
+                        healthIdsEq(searchRequest.getHealthIds()),
+                        ingredientIdsEq(searchRequest.getIngredientIds()),
+                        productNameContains(searchRequest.getProductName())
+                )
                 .orderBy(sortType.getOrderSpecifier())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        tupleJPAQuery
-
-
+        Long totalCount = queryFactory
+                .select(nSupplement.count())
+                .from(nSupplement)
+                .where(
+                        healthIdsEq(searchRequest.getHealthIds()),
+                        ingredientIdsEq(searchRequest.getIngredientIds()),
+                        productNameContains(searchRequest.getProductName())
+                )
+                .fetchOne();
 
         Map<Long, NSupplementResponseDtoV2> nSupplementMap = new LinkedHashMap<>();
 
@@ -362,12 +313,7 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
 
         List<NSupplementResponseDtoV2> content = nSupplementMap.values().stream().toList();
 
-        long count = nSupplementMap.size();
-
-
-
-
-        Page<NSupplementResponseDtoV2> page = PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+        Page<NSupplementResponseDtoV2> page = new PageImpl<>(content, pageable, totalCount != null ? totalCount : 0);
 
         return new PageResponseDto<>(page);
     }*/
