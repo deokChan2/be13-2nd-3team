@@ -65,7 +65,6 @@ public class NSupplementController {
         return ResponseEntity.ok(page);
     }*/
 
-    // @RequestParam으로 바꿔야 할듯
     @GetMapping("/info/search")
     public ResponseEntity<PageResponseDto<NSupplementResponseDtoV2>> infoSearch(
             @RequestParam(required = false) String productName,
