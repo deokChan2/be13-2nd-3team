@@ -6,6 +6,7 @@ import com.beyond3.yyGang.nsupplement.dto.NSupplementResponseDtoV2;
 import com.beyond3.yyGang.nsupplement.dto.NSupplementSearchRequestDto;
 import com.beyond3.yyGang.nsupplement.dto.NSupplementSearchRequestDtoV2;
 import com.beyond3.yyGang.nsupplement.dto.PageResponseDto;
+import com.beyond3.yyGang.review.QReview;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -23,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.beyond3.yyGang.hfunction.QHFunctionalCategory.*;
@@ -30,6 +32,7 @@ import static com.beyond3.yyGang.hfunction.QHFunctionalItem.*;
 import static com.beyond3.yyGang.ingredient.QIngredient.*;
 import static com.beyond3.yyGang.ingredient.QIngredientCategory.*;
 import static com.beyond3.yyGang.nsupplement.QNSupplement.*;
+import static com.beyond3.yyGang.review.QReview.*;
 
 public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
 
@@ -61,7 +64,7 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                 .fetch();
 
         JPAQuery<Long> countQuery = queryFactory
-                .select(nSupplement.count())
+                .select(nSupplement.productId.count())
                 .from(nSupplement)
                 .where(
                         existsHealthIdEq(searchRequest.getHealthId()),
@@ -69,7 +72,10 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                         productNameContains(searchRequest.getProductName())
                 );
 
-        Page<NSupplementResponseDto> page = PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+        long totalCount = Optional.ofNullable(countQuery.fetchOne()).orElse(0L);
+
+
+        Page<NSupplementResponseDto> page = PageableExecutionUtils.getPage(content, pageable, () -> totalCount);
 
         return new PageResponseDto<>(page);
     }
@@ -93,7 +99,7 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                 .fetch();
 
         Long totalCount = queryFactory
-                .select(nSupplement.count())
+                .select(nSupplement.productId.count())
                 .from(nSupplement)
                 .where(
                         healthIdsEq(searchRequest.getHealthIds()),
@@ -122,6 +128,14 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                 .where(ingredientCategory.nSupplement.in(nSupplements))
                 .fetch();
 
+        // 해당 영양제의 리뷰 개수 구하기
+        /*queryFactory
+                .select(review.nSupplement.productId ,review.nSupplement.productId.count())
+                .from(review)
+                .groupBy(review.nSupplement.productId)
+                .where(ingredientCategory.nSupplement.in(nSupplements));*/
+
+
         Map<Long, NSupplementResponseDtoV2> nSupplementMap = new LinkedHashMap<>();
         
         List<NSupplementResponseDtoV2> nSupplementList = new ArrayList<>();
@@ -136,6 +150,13 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                             nSupplement.getPrice()
                     ));
         }
+        /*Map<Long, NSupplementResponseDtoV2> nSupplementMap = nSupplements.stream()
+                .collect(Collectors.toMap(
+                        NSupplement::getProductId,
+                        n -> new NSupplementResponseDtoV2(n.getProductName(), n.getCaution(), n.getBrand(), n.getPrice()),
+                        (existing, replacement) -> existing, // 중복된 키 처리 (없으면 생략 가능)
+                        LinkedHashMap::new // 순서 유지
+                ));*/
 
         for (Tuple tuple : hFuncCateTuple) {
             NSupplementResponseDtoV2 dto = nSupplementMap.get(tuple.get(hFunctionalCategory.nSupplement.productId));
@@ -151,14 +172,14 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
             }
         }
 
-        List<NSupplementResponseDtoV2> content = nSupplementMap.values().stream().toList();
+        List<NSupplementResponseDtoV2> content = new ArrayList<>(nSupplementMap.values());
 
         Page<NSupplementResponseDtoV2> page = new PageImpl<>(content, pageable, totalCount != null ? totalCount : 0);
 
         return new PageResponseDto<>(page);
     }
 
-    // 테스트 해봐야대
+    // 테스트 해봐야대, 코드 좀 고치고
     public PageResponseDto<NSupplementResponseDtoV2> searchPageV3(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {
 
         List<NSupplement> nSupplements = queryFactory
@@ -175,7 +196,7 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                 .fetch();
 
         Long totalCount = queryFactory
-                .select(nSupplement.count())
+                .select(nSupplement.productId.count())
                 .from(nSupplement)
                 .where(
                         healthIdsEq(searchRequest.getHealthIds()),
@@ -183,6 +204,14 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                         productNameContains(searchRequest.getProductName())
                 )
                 .fetchOne();
+
+        Map<Long, NSupplementResponseDtoV2> nSupplementMap = nSupplements.stream()
+                .collect(Collectors.toMap(
+                        NSupplement::getProductId,
+                        n -> new NSupplementResponseDtoV2(n.getProductName(), n.getCaution(), n.getBrand(), n.getPrice()),
+                        (existing, replacement) -> existing, // 중복된 키 처리
+                        LinkedHashMap::new // 순서 유지
+                ));
 
         Map<Long, List<String>> healthFuncMap = queryFactory
                 .select(
@@ -214,7 +243,13 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                         Collectors.mapping(tuple -> tuple.get(ingredient1.ingredient), Collectors.toList())
                 ));
 
-        List<NSupplementResponseDtoV2> content = nSupplements.stream()
+        // if로 바꾸기
+        /*nSupplementMap.forEach((productId, dto) -> {
+            dto.addHealthNames(healthFuncMap.getOrDefault(productId, Collections.emptyList()));
+            dto.addIngredients(ingredientMap.getOrDefault(productId, Collections.emptyList()));
+        });
+*/
+        /*List<NSupplementResponseDtoV2> content = nSupplements.stream()
                 .map(nsupplement -> {
                     NSupplementResponseDtoV2 dto =
                             new NSupplementResponseDtoV2(
@@ -230,7 +265,104 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
 
                     return dto;
                 })
-                .toList();
+                .toList();*/
+
+        List<NSupplementResponseDtoV2> content = new ArrayList<>(nSupplementMap.values());
+        Page<NSupplementResponseDtoV2> page = new PageImpl<>(content, pageable, totalCount != null ? totalCount : 0);
+
+        return new PageResponseDto<>(page);
+    }
+
+    public PageResponseDto<NSupplementResponseDtoV2> searchPageV4(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {
+
+        List<NSupplement> nSupplements = queryFactory
+                .select(nSupplement)
+                .from(nSupplement)
+                .where(
+                        healthIdsEq(searchRequest.getHealthIds()),
+                        ingredientIdsEq(searchRequest.getIngredientIds()),
+                        productNameContains(searchRequest.getProductName())
+                )
+                .orderBy(sortType.getOrderSpecifier())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long totalCount = queryFactory
+                .select(nSupplement.productId.count())
+                .from(nSupplement)
+                .where(
+                        healthIdsEq(searchRequest.getHealthIds()),
+                        ingredientIdsEq(searchRequest.getIngredientIds()),
+                        productNameContains(searchRequest.getProductName())
+                )
+                .fetchOne();
+
+        List<Tuple> hFuncCateTuple = queryFactory
+                .select(
+                        hFunctionalCategory.nSupplement.productId,
+                        hFunctionalItem.healthName
+                )
+                .from(hFunctionalCategory)
+                .join(hFunctionalCategory.hFunctionalItem, hFunctionalItem)
+                .where(hFunctionalCategory.nSupplement.in(nSupplements))
+                .fetch();
+
+        List<Tuple> ingrCateTuple = queryFactory
+                .select(
+                        ingredientCategory.nSupplement.productId,
+                        ingredient1.ingredient
+                )
+                .from(ingredientCategory)
+                .join(ingredientCategory.ingredient, ingredient1)
+                .where(ingredientCategory.nSupplement.in(nSupplements))
+                .fetch();
+
+        // 해당 영양제의 리뷰 개수 구하기
+        queryFactory
+                .select(review.nSupplement.productId ,review.nSupplement.productId.count())
+                .from(review)
+                .groupBy(review.nSupplement.productId)
+                .where(ingredientCategory.nSupplement.in(nSupplements));
+
+
+        Map<Long, NSupplementResponseDtoV2> nSupplementMap = new LinkedHashMap<>();
+
+        List<NSupplementResponseDtoV2> nSupplementList = new ArrayList<>();
+
+        for (NSupplement nSupplement : nSupplements) {
+
+            nSupplementMap.put(nSupplement.getProductId(),
+                    new NSupplementResponseDtoV2(
+                            nSupplement.getProductName(),
+                            nSupplement.getCaution(),
+                            nSupplement.getBrand(),
+                            nSupplement.getPrice()
+                    ));
+        }
+        /*Map<Long, NSupplementResponseDtoV2> nSupplementMap = nSupplements.stream()
+                .collect(Collectors.toMap(
+                        NSupplement::getProductId,
+                        n -> new NSupplementResponseDtoV2(n.getProductName(), n.getCaution(), n.getBrand(), n.getPrice()),
+                        (existing, replacement) -> existing, // 중복된 키 처리 (없으면 생략 가능)
+                        LinkedHashMap::new // 순서 유지
+                ));*/
+
+        for (Tuple tuple : hFuncCateTuple) {
+            NSupplementResponseDtoV2 dto = nSupplementMap.get(tuple.get(hFunctionalCategory.nSupplement.productId));
+            if (dto != null) {
+                dto.addHealthName(tuple.get(hFunctionalItem.healthName));
+            }
+        }
+
+        for (Tuple tuple : ingrCateTuple) {
+            NSupplementResponseDtoV2 dto = nSupplementMap.get(tuple.get(ingredientCategory.nSupplement.productId));
+            if (dto != null) {
+                dto.addHealthName(tuple.get(ingredient1.ingredient));
+            }
+        }
+
+        List<NSupplementResponseDtoV2> content = new ArrayList<>(nSupplementMap.values());
 
         Page<NSupplementResponseDtoV2> page = new PageImpl<>(content, pageable, totalCount != null ? totalCount : 0);
 
