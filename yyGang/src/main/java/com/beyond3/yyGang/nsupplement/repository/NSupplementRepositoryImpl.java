@@ -138,18 +138,16 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
         }
 
         for (Tuple tuple : hFuncCateTuple) {
-            Long productId = tuple.get(hFunctionalCategory.nSupplement.productId);
-            String healthName = tuple.get(hFunctionalItem.healthName);
-            if (nSupplementMap.containsKey(productId)) {
-                nSupplementMap.get(productId).addHealthName(healthName);
+            NSupplementResponseDtoV2 dto = nSupplementMap.get(tuple.get(hFunctionalCategory.nSupplement.productId));
+            if (dto != null) {
+                dto.addHealthName(tuple.get(hFunctionalItem.healthName));
             }
         }
 
         for (Tuple tuple : ingrCateTuple) {
-            Long productId = tuple.get(ingredientCategory.nSupplement.productId);
-            String ingredient = tuple.get(ingredient1.ingredient);
-            if (nSupplementMap.containsKey(productId)) {
-                nSupplementMap.get(productId).addIngredient(ingredient);
+            NSupplementResponseDtoV2 dto = nSupplementMap.get(tuple.get(ingredientCategory.nSupplement.productId));
+            if (dto != null) {
+                dto.addHealthName(tuple.get(ingredient1.ingredient));
             }
         }
 
