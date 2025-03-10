@@ -128,14 +128,6 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                 .where(ingredientCategory.nSupplement.in(nSupplements))
                 .fetch();
 
-        // 해당 영양제의 리뷰 개수 구하기
-        /*queryFactory
-                .select(review.nSupplement.productId ,review.nSupplement.productId.count())
-                .from(review)
-                .groupBy(review.nSupplement.productId)
-                .where(ingredientCategory.nSupplement.in(nSupplements));*/
-
-
         Map<Long, NSupplementResponseDtoV2> nSupplementMap = new LinkedHashMap<>();
         
         List<NSupplementResponseDtoV2> nSupplementList = new ArrayList<>();
@@ -150,13 +142,6 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                             nSupplement.getPrice()
                     ));
         }
-        /*Map<Long, NSupplementResponseDtoV2> nSupplementMap = nSupplements.stream()
-                .collect(Collectors.toMap(
-                        NSupplement::getProductId,
-                        n -> new NSupplementResponseDtoV2(n.getProductName(), n.getCaution(), n.getBrand(), n.getPrice()),
-                        (existing, replacement) -> existing, // 중복된 키 처리 (없으면 생략 가능)
-                        LinkedHashMap::new // 순서 유지
-                ));*/
 
         for (Tuple tuple : hFuncCateTuple) {
             NSupplementResponseDtoV2 dto = nSupplementMap.get(tuple.get(hFunctionalCategory.nSupplement.productId));

@@ -44,6 +44,8 @@ public class NSupplement {
 
     private int stockQuantity;
 
+    private int reviewCount;    // 전체 리뷰 수
+
 
 //    @OneToMany(mappedBy = "nSupplements")
 //    private List<Review> reviews;
