@@ -20,8 +20,8 @@ public enum SortType {
     REVIEW_DESC(),*/
     NAME_ASC(nSupplement.productName.asc()),
     NAME_DESC(nSupplement.productName.desc()),
-    /*REVIEW_ASC(nSupplement.reviewCount.asc()),
-    REVIEW_DESC(nSupplement.reviewCount.desc())*/;
+    REVIEW_ASC(nSupplement.reviewCount.asc()),
+    REVIEW_DESC(nSupplement.reviewCount.desc());
 
     private final OrderSpecifier<?> orderSpecifier;
 
