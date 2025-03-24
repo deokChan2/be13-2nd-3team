@@ -13,6 +13,9 @@ import java.util.List;
 @NoArgsConstructor
 public class NSupplementResponseDtoV2 {
 
+    @Schema(description = "제품ID")
+    private Long productId;
+
     @Schema(description = "제품명")
     private String productName;
 
@@ -29,7 +32,8 @@ public class NSupplementResponseDtoV2 {
 
     private List<String> healthNames = new ArrayList<>();
 
-    public NSupplementResponseDtoV2(String productName, String caution, String brand, int price) {
+    public NSupplementResponseDtoV2(Long productId, String productName, String caution, String brand, int price) {
+        this.productId = productId;
         this.productName = productName;
         this.caution = caution;
         this.brand = brand;

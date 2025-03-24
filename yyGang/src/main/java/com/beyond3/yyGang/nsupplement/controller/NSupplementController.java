@@ -10,6 +10,9 @@ import com.beyond3.yyGang.nsupplement.dto.PageResponseDto;
 import com.beyond3.yyGang.nsupplement.repository.NSupplementRepository;
 import com.beyond3.yyGang.nsupplement.repository.SortType;
 import com.beyond3.yyGang.nsupplement.service.NSupplementService;
+import com.beyond3.yyGang.review.dto.ReviewResponseDto;
+import com.beyond3.yyGang.review.service.ReviewService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -20,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -36,6 +41,8 @@ public class NSupplementController {
 
     private final NSupplementService nSupplementService;
     private final NSupplementRepository nSupplementRepository;
+
+
 
     @PostMapping("/")
     public ResponseEntity<Void> register(@RequestBody NSupplementRegisterDto nSupplementRegisterDto) {
@@ -50,6 +57,28 @@ public class NSupplementController {
     @GetMapping("/info")
     public ResponseEntity<List<NSupplementRegisterDto>> info() {
         return ResponseEntity.ok(nSupplementService.getAllNSupplements());
+    }
+
+    @GetMapping("/{nSupplementId}")
+    public ResponseEntity<NSupplement> detail(@PathVariable Long nSupplementId) {
+        NSupplement nSupplement = nSupplementRepository.findByproductId(nSupplementId).orElseThrow(() -> new RuntimeException("nSupplement not found"));
+
+        return ResponseEntity.ok(nSupplement);
+    }
+
+    // 특정 상품 리뷰 조회  ->  페이징 처리
+    @GetMapping("/{nSupplementId}/review")
+    @Operation(summary = "상품 리뷰 조회", description = "특정 상품에 대한 모든 리뷰 조회")
+    public ResponseEntity<List<ReviewResponseDto>> viewReview(
+            @PathVariable("nSupplementId") Long productId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
+
+        // 특정 상품에 대한 리뷰이기 때문에 사용자는 필요 x
+        List<ReviewResponseDto> reviewResponseDtos = reviewService.viewReview(productId, page, size);
+
+        // 전체 리뷰들이 보이도록
+        return ResponseEntity.ok(reviewResponseDtos);
     }
 
     // @RequestParam으로 바꿔야 할듯

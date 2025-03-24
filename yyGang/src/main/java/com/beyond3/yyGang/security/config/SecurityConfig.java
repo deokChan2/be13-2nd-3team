@@ -16,6 +16,11 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Slf4j
 @Configuration
@@ -31,7 +36,9 @@ public class SecurityConfig {
         // 스프링 시큐리티가 HTTP 요청에 대한 보안 설정을 적용
         http
                 .csrf(AbstractHttpConfigurer::disable)      // JWT를 사용하니 세션 사용 비활성화
-                .cors(Customizer.withDefaults())
+                //.cors(Customizer.withDefaults())
+                .cors(corsCustomizer ->
+                        corsCustomizer.configurationSource(getCorsConfigurationSource()))
                 .httpBasic(AbstractHttpConfigurer::disable)     // 기본 HTTP 인증 방식 Basic Authentication 비활성화
                 .formLogin(AbstractHttpConfigurer::disable)
                 .sessionManagement((sesstionManagement) ->
@@ -43,9 +50,11 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(requests ->
                         requests
+                                .requestMatchers("/**").permitAll()
                                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/health").permitAll()
                                 .requestMatchers("/user/join").permitAll() // 로그인 하지 않은 사용자 회원가입 페이지 접근 가능
                                 .requestMatchers("/user/login").permitAll() // 로그인 하지 않는 사용자 login 페이지 접근 가능
+                                .requestMatchers("/api/**").permitAll()
                                 .requestMatchers("/cart/**").permitAll()
                                 .requestMatchers("/nsupplement/**").permitAll()
                                 .anyRequest().authenticated());  // 위에 명시된 경로 외의 다른 모든 요청은 인증된 사용자만 접근할 수 있도록 설정
@@ -63,5 +72,24 @@ public class SecurityConfig {
     public PasswordEncoder bCryptPasswordEncoder() {
         // BCryptPasswordEncoder를 기본으로 다양한 여러 암호화 방식을 추가할 수 있음
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
+    @Bean
+    public static CorsConfigurationSource getCorsConfigurationSource() {
+
+        return request -> {
+            CorsConfiguration config = new CorsConfiguration();
+            config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174")); // Vue.js 요청 허용
+            config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+            config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+            config.setExposedHeaders(List.of("Authorization"));
+            config.setAllowCredentials(true);
+            config.setMaxAge(3600L);
+
+            return config;
+        };
+
+
+
     }
 }

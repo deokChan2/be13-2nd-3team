@@ -30,8 +30,10 @@ public class JwtTokenProvider {
 
     private final SecretKey key;  // JWT 서명에 사용될 비밀 키
     //    private final UserDetailsService userDetailsService;
-    private final long ACCESS_TOKEN_EXP = 1000L * 60L * 15L; // 15분
-    private final long REFRESH_TOKEN_EXP = 1000L * 60L * 60L * 15L;    // refresh 토큰 만료 기간
+//    private final long ACCESS_TOKEN_EXP = 1000L * 60L * 15L; // 15분
+//    private final long REFRESH_TOKEN_EXP = 1000L * 60L * 60L * 15L;    // refresh 토큰 만료 기간
+    private final long ACCESS_TOKEN_EXP = 1000L * 60L;
+    private final long REFRESH_TOKEN_EXP = 1000L * 60L * 5L;
     private final UserDetailsService userDetailsService;
     private final RedisTemplate<String, String> redisTemplate;
 

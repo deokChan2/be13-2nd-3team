@@ -40,12 +40,13 @@ public class CartController {
     private final JwtTokenProvider jwtTokenProvider;
 
     // 로그인한 사용자의 장바구니 조회
-    @GetMapping
+    @GetMapping("/")
     @Operation(summary = "장바구니 목록 조회", description = "사용자 장바구니의 영양제 목록을 조회한다.")
-    public ResponseEntity<CartResponseDto> getUserCart(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<CartResponseDto> getUserCart(@RequestHeader("Authorization") String token, @RequestParam(name = "page", defaultValue = "0") int page,
+                                                       @RequestParam(name = "size", defaultValue = "10") int size) {
         String userEmail = getUserEmailFromToken(token);
 
-        CartResponseDto cartResponseDto = cartService.getCart(userEmail);
+        CartResponseDto cartResponseDto = cartService.getCart(userEmail, page, size);
 
         return ResponseEntity.ok(cartResponseDto);
     }
@@ -69,9 +70,6 @@ public class CartController {
     public ResponseEntity<Long> deleteCartOption(@PathVariable Long cartOptionId
             /*,@RequestHeader("Authorization") String token*/) {
 
-        cartOptionRepository.findById(cartOptionId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 장바구니 품목을 찾을 수 없습니다."));
-
         cartService.deleteCartOption(cartOptionId);
         return ResponseEntity.ok(cartOptionId);
     }
@@ -83,19 +81,8 @@ public class CartController {
                                                                   @RequestParam int quantity
             /*,@RequestHeader("Authorization") String token*/) {
 
-
-//        if(quantity <= 0 ) {
-//            return new ResponseEntity<CartOptionDto>("최소 1개 이상 담아주세요", HttpStatus.BAD_REQUEST);
-//        }
         // 수량, 가격 업데이트
-        cartService.updateCartProduct(cartOptionId, quantity);
-
-        CartOption updateCartOption = cartOptionRepository.findById(cartOptionId).orElseThrow(EntityNotFoundException::new);
-        CartOptionDto cartOptionDto = new CartOptionDto();
-        cartOptionDto.setNSupplementId(updateCartOption.getNSupplement().getProductId());
-        cartOptionDto.setQuantity(updateCartOption.getQuantity());
-        cartOptionDto.setPrice(updateCartOption.getPrice());  // 변경된 가격
-
+        CartOptionDto cartOptionDto = cartService.updateCartProduct(cartOptionId, quantity);
         return ResponseEntity.ok(cartOptionDto);
     }
 

@@ -14,7 +14,7 @@ import lombok.Getter;
 
 @Entity
 @Getter
-@Table(name = "answer_like")
+@Table(name = "board_like")
 public class BoardLike {
 
     @EmbeddedId

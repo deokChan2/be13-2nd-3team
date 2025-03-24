@@ -136,6 +136,7 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
 
             nSupplementMap.put(nSupplement.getProductId(),
                     new NSupplementResponseDtoV2(
+                            nSupplement.getProductId(),
                             nSupplement.getProductName(),
                             nSupplement.getCaution(),
                             nSupplement.getBrand(),
@@ -153,7 +154,7 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
         for (Tuple tuple : ingrCateTuple) {
             NSupplementResponseDtoV2 dto = nSupplementMap.get(tuple.get(ingredientCategory.nSupplement.productId));
             if (dto != null) {
-                dto.addHealthName(tuple.get(ingredient1.ingredient));
+                dto.addIngredient(tuple.get(ingredient1.ingredient));
             }
         }
 
@@ -165,7 +166,7 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
     }
 
     // 테스트 해봐야대, 코드 좀 고치고
-    public PageResponseDto<NSupplementResponseDtoV2> searchPageV3(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {
+    /*public PageResponseDto<NSupplementResponseDtoV2> searchPageV3(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {
 
         List<NSupplement> nSupplements = queryFactory
                 .select(nSupplement)
@@ -229,12 +230,12 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                 ));
 
         // if로 바꾸기
-        /*nSupplementMap.forEach((productId, dto) -> {
+        *//*nSupplementMap.forEach((productId, dto) -> {
             dto.addHealthNames(healthFuncMap.getOrDefault(productId, Collections.emptyList()));
             dto.addIngredients(ingredientMap.getOrDefault(productId, Collections.emptyList()));
         });
-*/
-        /*List<NSupplementResponseDtoV2> content = nSupplements.stream()
+*//*
+        *//*List<NSupplementResponseDtoV2> content = nSupplements.stream()
                 .map(nsupplement -> {
                     NSupplementResponseDtoV2 dto =
                             new NSupplementResponseDtoV2(
@@ -250,15 +251,15 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
 
                     return dto;
                 })
-                .toList();*/
+                .toList();*//*
 
         List<NSupplementResponseDtoV2> content = new ArrayList<>(nSupplementMap.values());
         Page<NSupplementResponseDtoV2> page = new PageImpl<>(content, pageable, totalCount != null ? totalCount : 0);
 
         return new PageResponseDto<>(page);
-    }
+    }*/
 
-    public PageResponseDto<NSupplementResponseDtoV2> searchPageV4(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {
+    /*public PageResponseDto<NSupplementResponseDtoV2> searchPageV4(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {
 
         List<NSupplement> nSupplements = queryFactory
                 .select(nSupplement)
@@ -325,13 +326,13 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
                             nSupplement.getPrice()
                     ));
         }
-        /*Map<Long, NSupplementResponseDtoV2> nSupplementMap = nSupplements.stream()
+        *//*Map<Long, NSupplementResponseDtoV2> nSupplementMap = nSupplements.stream()
                 .collect(Collectors.toMap(
                         NSupplement::getProductId,
                         n -> new NSupplementResponseDtoV2(n.getProductName(), n.getCaution(), n.getBrand(), n.getPrice()),
                         (existing, replacement) -> existing, // 중복된 키 처리 (없으면 생략 가능)
                         LinkedHashMap::new // 순서 유지
-                ));*/
+                ));*//*
 
         for (Tuple tuple : hFuncCateTuple) {
             NSupplementResponseDtoV2 dto = nSupplementMap.get(tuple.get(hFunctionalCategory.nSupplement.productId));
@@ -352,7 +353,7 @@ public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
         Page<NSupplementResponseDtoV2> page = new PageImpl<>(content, pageable, totalCount != null ? totalCount : 0);
 
         return new PageResponseDto<>(page);
-    }
+    }*/
 
     // 이거는 코딩할수록 이상해지는듯한.. 별로 안 좋은듯
     /*public PageResponseDto<NSupplementResponseDtoV2> searchPageV3(NSupplementSearchRequestDtoV2 searchRequest, Pageable pageable, SortType sortType) {
