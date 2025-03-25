@@ -2,7 +2,9 @@ package com.beyond3.yyGang.nsupplement;
 
 import com.beyond3.yyGang.hfunction.HFunctionalCategory;
 import com.beyond3.yyGang.ingredient.IngredientCategory;
+import com.beyond3.yyGang.nsupplement.dto.NSupplementModifyDto;
 import com.beyond3.yyGang.nsupplement.dto.NSupplementRegisterDto;
+import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,12 +15,15 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+@Data
 @Entity
 @Getter
 @Builder
@@ -45,6 +50,25 @@ public class NSupplement {
     private int stockQuantity;
 
     private int reviewCount;    // 전체 리뷰 수
+
+    public void updateNSupplement(NSupplementModifyDto dto) {
+        // null이거나 값이 비어 있는 경우는 업데이트 안되게ㅇㅇ
+
+        if(StringUtils.isNotBlank(dto.getProductName())){
+            this.productName = dto.getProductName();
+        }
+
+        if(StringUtils.isNotBlank(dto.getCaution())){
+            this.caution = dto.getCaution();
+        }
+
+        if(StringUtils.isNotBlank(dto.getBrand())){
+            this.brand = dto.getBrand();
+        }
+
+        Optional.of(dto.getPrice()).ifPresent(this::setPrice);
+        Optional.of(dto.getStockQuantity()).ifPresent(this::setStockQuantity);
+    }
 
 
 //    @OneToMany(mappedBy = "nSupplements")

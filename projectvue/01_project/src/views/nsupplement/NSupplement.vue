@@ -34,7 +34,7 @@
       :class="['btn btn-tag', { 'selected-health': selectedHealthIds.includes(tag.id) }]"
       @click="toggleHealthId(tag.id)"
     >
-      # {{ tag.name }}
+    # {{ healthNameMap[tag.name] || tag.name }}
     </button>
   </div>
 </div>
@@ -50,7 +50,7 @@
       :class="['btn btn-tag', { 'selected-ingredient': selectedingredientIds.includes(tag.id) }]"
       @click="toggleIngredientId(tag.id)"
     >
-      # {{ tag.name }}
+    # {{ ingredientNameMap[tag.name] || tag.name }}
     </button>
   </div>
 </div>
@@ -84,6 +84,29 @@
         pageLimit: 5, // 페이지네이션에 보이는 페이지의 수
         listLimit: 0 // 한 페이지에 표시될 리스트의 수
     });
+
+    console.log(currentRoute.query.page);
+    
+
+    const healthNameMap = {
+  GUT_HEALTH: "장 건강",
+  EYE: "눈 건강",
+  FATIGUE: "피로 개선",
+  SKIN_HEALTH: "피부 건강",
+  LIVER: "간 건강",
+  SLEEP: "수면 개선",
+  JOINT_HEALTH: "관절 건강",
+  FITNESS: "체력 증진",
+  BODY_FAT: "체지방 감소"
+}
+
+const ingredientNameMap = {
+  LUTEIN: "루테인",
+  MAGNESIUM: "마그네슘",
+  PROTEIN: "단백질",
+  VITAMIN_B1: "비타민 B1",
+  VITAMIN_B3: "비타민 B3"
+}
 
     const fetchNSupplement = async (page) => {
         try {

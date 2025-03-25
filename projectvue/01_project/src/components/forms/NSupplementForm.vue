@@ -52,22 +52,23 @@
             @click.prevent="activeTab = 'detail'"
           >상세 정보</a>
         </li>
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            :class="{ active: activeTab === 'review' }"
-            href="#"
-            @click.prevent="activeTab = 'review'"
-          >리뷰 {{ nsupplement.reviewCount }}</a>
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            :class="{ active: activeTab === 'qna' }"
-            href="#"
-            @click.prevent="activeTab = 'qna'"
-          >Q&A</a>
-        </li>
+     
+  <button
+    type="button"
+    class="btn"
+    :class="activeTab === 'review' ? 'btn-primary' : 'btn-outline-primary'"
+    @click="emit('review-click', nsupplement.productId)"
+   
+  >
+    리뷰 {{ nsupplement.reviewCount }}
+  </button>
+  <button
+    type="button"
+    class="btn"
+    :class="activeTab === 'qna' ? 'btn-primary' : 'btn-outline-primary'"
+  >
+    Q&A
+  </button>
       </ul>
 
 <div class="mt-3">
@@ -98,15 +99,14 @@
   </div>
 
   <!-- 리뷰 -->
-  <div v-else-if="activeTab === 'review'">
-    <p>리뷰</p>
-    <!-- 리뷰 리스트가 있다면 여기서 v-for로 렌더링 -->
-  </div>
+  <!-- <div v-if="activeTab === 'review'">
+    <Review />
+  </div> -->
 
   <!-- Q&A -->
-  <div v-else-if="activeTab === 'qna'">
+  <!-- <div v-else-if="activeTab === 'qna'">
     <p>Q&A</p>
-  </div>
+  </div> -->
 </div>
 
 </div>
@@ -117,7 +117,10 @@
   
     const props = defineProps({
         nsupplement: Object
+        // ,nSupplementId: Number
     });
+
+    const emit = defineEmits(['review-click']);
 
     const activeTab = ref('detail');
   const quantity = ref(1);

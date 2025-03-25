@@ -1,6 +1,6 @@
 <template>
     <div>
-        <NSupplementForm :nsupplement="nsupplement"/>
+        <NSupplementForm :nsupplement="nsupplement" @review-click="reviewClick"/>/>
     </div>
 </template>
 
@@ -13,15 +13,19 @@
     const router = useRouter();
     const currentRoute = useRoute();
     const nsupplement = reactive({});
+    // const productId = Number(currentRoute.params.productId);
 
     const fetchNSupplement = async (productId) => {
         try {
             const response = await apiClient.get(
                 `/nsupplement/${productId}`
             );
+            const data = typeof response.data === 'string'
+      ? JSON.parse(response.data)
+      : response.data;
 
-            Object.assign(nsupplement, response.data);
-
+    Object.assign(nsupplement, data);
+    console.log('최종 nsupplement:', nsupplement);
 
         } catch (error) {
             console.log(error);
@@ -34,6 +38,11 @@
             //     alert('에러가 발생했습니다.');
             // }
         }
+    };
+
+    const reviewClick = (nsupplementId) => {
+        
+        router.push(`/nsupplement/${nsupplementId}/review`);
     };
 
     onMounted(() => {

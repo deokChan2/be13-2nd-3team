@@ -2,7 +2,7 @@ package com.beyond3.yyGang.hfunction.controller;
 
 import com.beyond3.yyGang.hfunction.HFunctionalItem;
 import com.beyond3.yyGang.hfunction.HFunctionalItemResponseDto;
-import com.beyond3.yyGang.hfunction.repository.HFunctionalItemRepository;
+import com.beyond3.yyGang.hfunction.repository.HFunctionalRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class HFunctionController {
 
-    private final HFunctionalItemRepository hFunctionalItemRepository;
+    private final HFunctionalRepository hFunctionalItemRepository;
 
     @GetMapping
     public ResponseEntity<HFunctionalItemResponseDto> HFunctionalItems() {

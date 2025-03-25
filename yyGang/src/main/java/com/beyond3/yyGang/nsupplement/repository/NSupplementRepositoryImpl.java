@@ -6,7 +6,6 @@ import com.beyond3.yyGang.nsupplement.dto.NSupplementResponseDtoV2;
 import com.beyond3.yyGang.nsupplement.dto.NSupplementSearchRequestDto;
 import com.beyond3.yyGang.nsupplement.dto.NSupplementSearchRequestDtoV2;
 import com.beyond3.yyGang.nsupplement.dto.PageResponseDto;
-import com.beyond3.yyGang.review.QReview;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -32,7 +31,6 @@ import static com.beyond3.yyGang.hfunction.QHFunctionalItem.*;
 import static com.beyond3.yyGang.ingredient.QIngredient.*;
 import static com.beyond3.yyGang.ingredient.QIngredientCategory.*;
 import static com.beyond3.yyGang.nsupplement.QNSupplement.*;
-import static com.beyond3.yyGang.review.QReview.*;
 
 public class NSupplementRepositoryImpl implements NSupplementRepositoryCustom {
 

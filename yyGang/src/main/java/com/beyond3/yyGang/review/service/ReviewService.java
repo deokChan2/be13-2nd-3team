@@ -1,8 +1,5 @@
 package com.beyond3.yyGang.review.service;
 
-import com.beyond3.yyGang.handler.exception.NSupplementException;
-import com.beyond3.yyGang.handler.exception.UserException;
-import com.beyond3.yyGang.handler.message.ExceptionMessage;
 import com.beyond3.yyGang.nsupplement.NSupplement;
 import com.beyond3.yyGang.nsupplement.repository.NSupplementRepository;
 import com.beyond3.yyGang.review.domain.Review;
@@ -44,9 +41,9 @@ public class ReviewService {
         // 해당 회원이 해당 상품에 대한 리뷰를 이미 작성했는지?
         Optional<Review> reviewByUser = reviewRepository.findByUserAndNSupplement(user, product);
 
-        if(reviewByUser.isPresent()) {
-            throw new NSupplementException(ExceptionMessage.ALREADY_REVIEWED);
-        }
+//        if(reviewByUser.isPresent()) {
+//            throw new NSupplementException(ExceptionMessage.ALREADY_REVIEWED);
+//        }
 
         // 리뷰를 작성하지 않았다면 -> 리뷰 저장
         Review review = reviewRequestDto.toEntity(user, product);
@@ -68,7 +65,7 @@ public class ReviewService {
 
         // 해당 회원이 해당 상품에 대해 작성한 리뷰 가져오기
         Review reviewByUser = reviewRepository.findByUserAndNSupplement(user, product)
-                .orElseThrow(() -> new NSupplementException(ExceptionMessage.REVIEW_NOT_FOUND));
+                .orElseThrow();
 
         // 리뷰를 찾았으면 리뷰 삭제하기 + 리뷰 수 감소
         reviewRepository.delete(reviewByUser);
@@ -80,9 +77,7 @@ public class ReviewService {
     public List<ReviewResponseDto> viewReview(Long productId, int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size);
-        if(page < 0 || size <= 0){
-            throw new NSupplementException(ExceptionMessage.INVALID_VALUE);
-        }
+
 
         // 상품 먼저 추출
         NSupplement product = findProduct(productId);
@@ -104,7 +99,7 @@ public class ReviewService {
 
         // 작성한 리뷰 확인 -> 회원이 특정 상품에 대해 작성한 리뷰가 있는지?
         Review review = reviewRepository.findByUserAndNSupplement(user, product)
-                .orElseThrow(() -> new NSupplementException(ExceptionMessage.REVIEW_NOT_FOUND));
+                .orElseThrow();
 
         review.setContent(reviewRequestDto.getContent());
 
@@ -117,12 +112,12 @@ public class ReviewService {
     // 해당 email을 갖는 사용자가 존재하는지 확인
     private User extractedUser(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserException(ExceptionMessage.USER_NOT_FOUND));
+                .orElseThrow();
     }
 
     // 해당 Id를 갖는 상품이 존재하는지 확인
     private NSupplement findProduct(Long productId) {
         return nSupplementRepository.findByproductId(productId)
-                .orElseThrow(() -> new NSupplementException(ExceptionMessage.NO_REGISTERED_PRODUCTS));
+                .orElseThrow();
     }
 }

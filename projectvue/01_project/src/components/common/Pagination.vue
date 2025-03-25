@@ -69,3 +69,11 @@ import { computed } from 'vue';
         emit('change-page', { page, totalPages: totalPages.value });
     };
 </script>
+
+<!-- <style scoped>
+    .pagination .page-item.active .page-link {
+        background-color: #198754;
+        border-color: #198754;
+        color: white;
+    }
+</style> -->

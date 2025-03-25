@@ -1,8 +1,5 @@
 package com.beyond3.yyGang.ingredient;
 
-import com.beyond3.yyGang.hfunction.HFunctionalItem;
-import com.beyond3.yyGang.hfunction.HFunctionalItemResponseDto;
-import com.beyond3.yyGang.hfunction.repository.HFunctionalItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
