@@ -84,8 +84,6 @@
         pageLimit: 5, // 페이지네이션에 보이는 페이지의 수
         listLimit: 0 // 한 페이지에 표시될 리스트의 수
     });
-
-    console.log(currentRoute.query.page);
     
 
     const healthNameMap = {

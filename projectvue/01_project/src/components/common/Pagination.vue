@@ -2,7 +2,7 @@
     <nav aria-label="Page navigation example">
         <ul class="pagination justify-content-center">
             <li class="page-item">
-                <a class="page-link" href="#" aria-label="Previous"
+                <a class="page-link no-active" href="#" aria-label="Previous"
                     @click.prevent="changePage(pageInfo.currentPage - 1);">
                     <span aria-hidden="true">&laquo;</span>
                 </a>
@@ -16,7 +16,7 @@
             </li>
 
             <li class="page-item">
-                <a class="page-link" href="#" aria-label="Next"
+                <a class="page-link no-active" href="#" aria-label="Next"
                     @click.prevent="changePage(pageInfo.currentPage + 1);">
                     <span aria-hidden="true">&raquo;</span>
                 </a>
@@ -70,10 +70,34 @@ import { computed } from 'vue';
     };
 </script>
 
-<!-- <style scoped>
-    .pagination .page-item.active .page-link {
-        background-color: #198754;
-        border-color: #198754;
-        color: white;
-    }
-</style> -->
+<style scoped>
+.pagination .page-item .page-link {
+    color: #198754;
+    border-color: #198754;
+}
+
+.pagination .page-item .page-link:hover,
+.pagination .page-item .page-link:focus {
+    background-color: #198754;
+    color: white;
+    border-color: #198754;
+}
+
+.pagination .page-item .page-link.active {
+    background-color: #198754;
+    border-color: #198754;
+    color: white;
+}
+
+.pagination .page-item .no-active:hover,
+.pagination .page-item .no-active:focus {
+    background-color: transparent;
+    color: #198754;
+    border-color: #198754;
+}
+
+.pagination .page-link:focus {
+    outline: none;
+    box-shadow: none;
+}
+</style>

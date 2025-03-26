@@ -1,6 +1,6 @@
 <template>
     <div>
-        <ReviewForm :reviewData="reviewData"/>
+        <ReviewForm :reviewData="reviewData" @register-review-click="registerReviewClick" @modify-review-click="modifyReviewClick"/>
         
       <Pagination :pageInfo="pageInfo" 
       @change-page="changePage"/>
@@ -38,12 +38,9 @@ import apiClient from '@/api';
         try {
             const response = await apiClient.get(`/nsupplement/${nSupplementId}/review?page=${page-1}&size=10`);
 
-            reviewData.list = response.data;
+            reviewData.list = response.data.reviewResponseDtos;
 
-            console.log(response);
-            
-            
-            pageInfo.totalElements = reviewData.list.length;
+            pageInfo.totalElements = response.data.totalElements;
             pageInfo.listLimit = 10;
 
         } catch (error) {
@@ -61,6 +58,16 @@ import apiClient from '@/api';
       query: { page }
     });
         }
+    };
+    
+    const registerReviewClick = () => {
+        
+        router.push({ name: 'registerReview', params: {nSupplementId: currentRoute.params.nSupplementId}});
+    };
+
+    const modifyReviewClick = () => {
+        
+        router.push({ name: 'modifyReview', params: {nSupplementId: currentRoute.params.nSupplementId}});
     };
 
     onBeforeRouteUpdate((to, form) => {

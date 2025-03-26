@@ -9,6 +9,8 @@ import NSupplement from '@/views/nsupplement/NSupplement.vue';
 import NSupplementDetail from '@/views/nsupplement/NSupplementDetail.vue';
 import Cart from '@/views/cart/Cart.vue';
 import Review from '@/views/review/Review.vue';
+import RegisterReview from '@/views/review/RegisterReview.vue';
+import ModifyReview from '@/views/review/ModifyReview.vue';
 
 
 
@@ -44,6 +46,16 @@ const router = createRouter({
           path: 'nsupplement/:nSupplementId/review',
           name: 'nsupplement/nSupplementId/review',
           component: Review
+        },
+        {
+          path: 'nsupplement/:nSupplementId/review/register',
+          name: 'registerReview',
+          component: RegisterReview
+        },
+        {
+          path: 'nsupplement/:nSupplementId/review/register',
+          name: 'modifyReview',
+          component: ModifyReview
         }
         
       ]

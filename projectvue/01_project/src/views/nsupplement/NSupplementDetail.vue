@@ -25,7 +25,6 @@
       : response.data;
 
     Object.assign(nsupplement, data);
-    console.log('최종 nsupplement:', nsupplement);
 
         } catch (error) {
             console.log(error);

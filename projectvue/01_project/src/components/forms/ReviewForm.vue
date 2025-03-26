@@ -7,8 +7,8 @@
           <small class="text-muted">상품 구매하신 분들의 소중한 리뷰입니다.</small>
         </div>
         <div>
-          <button class="btn btn-outline-success me-2">리뷰 작성하기</button>
-          <button class="btn btn-outline-success">내 리뷰 수정하기</button>
+          <button class="btn btn-outline-success me-2" @click="emit('register-review-click')">리뷰 작성하기</button>
+          <button class="btn btn-outline-success" @click="emit('modify-review-click')">내 리뷰 확인</button>
         </div>
       </div>
   
@@ -33,10 +33,9 @@
         reviewData: Object
     });
 
-  // const obfuscateEmail = (email) => {
-  //   const [id, domain] = email.split('@')
-  //   return id.slice(0, 3) + '****@' + domain
-  // }
+    const emit = defineEmits(['register-review-click', 'modify-review-click']);
+    
+
   </script>
   
   <style scoped>
